@@ -80,6 +80,7 @@ class MADByTE_Main(QMainWindow):
         self.ViewNetwork.clicked.connect(self.ViewNetwork_launch)
         self.TOCSY_Net_Button_2.clicked.connect(self.MADByTE_Networking_Launch)
         self.actionDocumentation.triggered.connect(self.Launch_Documentation)
+        self.actionExamples.triggered.connect(self.Launch_Example)
         self.Plot_Proton_Button.clicked.connect(self.View_1D_Data)
         self.VIEWHSQC_2.clicked.connect(self.View_HSQC_Data)
         self.VIEWTOCSY_2.clicked.connect(self.View_TOCSY_Data)
@@ -115,6 +116,8 @@ class MADByTE_Main(QMainWindow):
     ###Functions####
     def Launch_Documentation(self):
         subprocess.Popen([os.path.join('Documentation','MADByTE_User_Guide.pdf')],shell=True)
+    def Launch_Example(self):
+        subprocess.Popen([os.path.join('Documentation','MADByTE_Example.pdf')],shell=True)
         
     def Load_Existing_Networks(self,MasterOutput):
         for Network in os.listdir(DEFAULT_NETWORKS):
