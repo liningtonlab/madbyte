@@ -25,7 +25,7 @@ LOGO_PATH = os.path.join(BASE, "static", "MADByTE_LOGO.png")
 
 class MADByTE_Main(QMainWindow):
     def __init__(self):
-        __version__ = 'GUI Version 4.3'
+        __version__ = 'GUI Version 4.3b'
         super(MADByTE_Main, self).__init__()
         uic.loadUi(os.path.join(BASE, 'static','MADByTE_GUI_v4_2.ui'),self)
 
@@ -73,6 +73,14 @@ class MADByTE_Main(QMainWindow):
         self.SMART_Export_Button.clicked.connect(self.SMART_Export_Fx)
         self.Export_Derep_File_Button.clicked.connect(self.Export_Derep_File)
         ###
+        self.Dereplicate_Button.setEnabled(False)
+        self.SMART_Export_Button.setEnabled(False)
+        self.Export_Derep_File_Button.setEnabled(False)
+        self.Plot_Proton_Button.setEnabled(False)
+        self.VIEWHSQC_2.setEnabled(False)
+        self.VIEWTOCSY_2.setEnabled(False)
+        self.MADByTE_Button_2.setEnabled(False)
+        self.TOCSY_Net_Button_2.setEnabled(False)
         self.Multiplet_Merger_Checkbox.setChecked(True)
         for NMR_Datatype in ['Bruker','Mestrenova']:#,'Agilent','NMRPipe']:
             self.NMR_Data_Type_Combo_Box.addItem(NMR_Datatype)
@@ -152,6 +160,7 @@ class MADByTE_Main(QMainWindow):
             self.BatchSamplesList.addItem(item)
         for NMR_Dataset in os.listdir(DataDirectory):
             self.NMR_Data_View_Selector.addItem(NMR_Dataset)
+            self.Plot_Proton_Button.setEnabled(True)
         return DataDirectory #Raw Data Directory (analogous to input_dir)
 
     def Select_Project_Directory_Fx(self):
@@ -160,9 +169,17 @@ class MADByTE_Main(QMainWindow):
         MasterOutput = os.path.join(Directory_Location)
         for Processed_Dataset in os.listdir(MasterOutput):
             self.Dereplication_Report_Sample_Select.addItem(Processed_Dataset)
+        if len(os.listdir(MasterOutput))>0:
+            self.Dereplicate_Button.setEnabled(True)
+            self.SMART_Export_Button.setEnabled(True)
+            self.Export_Derep_File_Button.setEnabled(True)
         for Network in os.listdir(MasterOutput):
             if 'html' in Network:
                 self.Drop_Down_List_Networks.addItem(Network)
+        self.TOCSY_Net_Button_2.setEnabled(True)
+        self.MADByTE_Button_2.setEnabled(True)
+        self.VIEWHSQC_2.setEnabled(True)
+        self.VIEWTOCSY_2.setEnabled(True)
         return MasterOutput #Output Directory
 
     def Remove_From_Sample_List(self):
@@ -206,7 +223,7 @@ class MADByTE_Main(QMainWindow):
 
     #################################################################
     ## The Dereplication Report was made to do dereplication through HSQC pattern matching
-    ## This is the original way it was coded - working on a way to streamline this and improve returned results. 
+    ## 
     ## 
 
     def Dereplication_Report(self):
