@@ -26,9 +26,9 @@ Banner_Path = os.path.join(BASE,"static","MADByTE_Banner_2.png")
 
 class MADByTE_Main(QMainWindow):
     def __init__(self):
-        __version__ = 'GUI Version 4.4'
+        __version__ = '1.0.0'
         super(MADByTE_Main, self).__init__()
-        uic.loadUi(os.path.join(BASE, 'static','MADByTE_GUI_v4_2.ui'),self)
+        uic.loadUi(os.path.join(BASE, 'static','MADByTE_GUI.ui'),self)
 
         # setup threadpool for processing
         self.threadpool = QThreadPool()
@@ -118,7 +118,7 @@ class MADByTE_Main(QMainWindow):
         subprocess.Popen([os.path.join('Documentation','MADByTE_User_Guide.pdf')],shell=True)
     def Launch_Example(self):
         subprocess.Popen([os.path.join('Documentation','MADByTE_Example.pdf')],shell=True)
-        
+
     def Load_Existing_Networks(self,MasterOutput):
         for Network in os.listdir(DEFAULT_NETWORKS):
             if 'html' in Network:
@@ -279,7 +279,7 @@ class MADByTE_Main(QMainWindow):
     def Export_Derep_File(self):
         ID = self.Dereplication_Report_Sample_Select.currentText()
         Sample_Dataset = pd.read_json(os.path.join(MasterOutput,ID,ID+'_HSQC_Preprocessed.json')).drop(["Intensity"],axis=1)
-        Sample_Dataset["Identity"] = ID 
+        Sample_Dataset["Identity"] = ID
         Sample_Dataset.to_json(os.path.join('Dereplication_Database','DDF_'+ID+'.json'))
     def ViewNetwork_launch(self):
         self.window2=QMainWindow()
@@ -434,7 +434,7 @@ class MADByTE_Main(QMainWindow):
             Bioactivity_Low = float(self.Low_Activity_Box.text())
             Bioactivity_Med = float(self.Mild_Activity_Box.text())
             Bioactivity_High = float(self.High_Activity_Box.text())
-            fname = self.Bioactivity_Network_Name_Box.text() 
+            fname = self.Bioactivity_Network_Name_Box.text()
             title = fname
             MADByTE.plotting.Bioactivity_plot(MasterOutput,Network_In_Path,Bioactivity_Data_In,title,fname,Bioactivity_Low,Bioactivity_Med,Bioactivity_High)
             PopUP('Network successfully created','The Bioactivity Network has been created successfully.')
@@ -445,16 +445,16 @@ class MADByTE_Main(QMainWindow):
         Network_In_Path = self.openFileNameDialog()
         if '.graphml' not in Network_In_Path:
             PopUP('Incorrect data type','Please select the .graphml version of the network, the HTML file will not work.')
-        
+
     def Select_Bioactivity_File_Fx(self):
         global Bioactivity_Data_In
         Bioactivity_Data_In = self.openFileNameDialog()
         if '.csv' not in Bioactivity_Data_In:
             PopUP('Incorrect data type','Please select a CSV file.')
-        
-        
-        
-        
+
+
+
+
 class Network_Viewer(QMainWindow):
     def __init__(self):
         super(Network_Viewer, self).__init__()
@@ -485,7 +485,7 @@ def PopUP(Type,message):
 
 # from mplwidget import MplWidget
 # from pyqtgraph import PlotWidget
-    
+
 if __name__ == "__main__":
     import sys
     app = QApplication(sys.argv)

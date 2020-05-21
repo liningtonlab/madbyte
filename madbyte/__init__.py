@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 from madbyte import core, utils
 from madbyte.logging import get_logger
 
-__version__ = '1.0.dev'
+__version__ = '1.0.0'
 
 logger = get_logger("MADByTE")
 
