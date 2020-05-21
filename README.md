@@ -9,6 +9,9 @@ https://www.madbyte.org/
 
 ## Setup
 
+For a stable version, please download the latest release. Alternatively, you can clone this repo development.
+
+Full documentation can be found in `Documentation/MADByTE_Install_Guide.pdf`.
 
 The easiest way to install madbyte is using the Anaconda Python distribution. To install dependencies in a virtual environment:
 
@@ -23,7 +26,13 @@ conda install -y -n madbyte -c bioconda nmrglue
 
 ## To run
 
+A full user guide and examples can be found in the `Documentation` directory.
+
+If you have already installed the madbyte virtual envrionment, then running the GUI may be as simple as:
+
 `conda activate madbyte && python madbyte_gui.py`
+
+
 
 
 ## Tests

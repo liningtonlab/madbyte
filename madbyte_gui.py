@@ -2,7 +2,7 @@
 # coding: utf-8
 import logging
 import os
-
+import subprocess
 import nmrglue as ng
 import pandas as pd
 # import pyqtgraph as pg
@@ -21,11 +21,12 @@ from madbyte.logging import setup_logging
 BASE = os.path.dirname(__file__)
 DEFAULT_NETWORKS = os.path.join(BASE, "Networks")
 LOGO_PATH = os.path.join(BASE, "static", "MADByTE_LOGO.png")
+Banner_Path = os.path.join(BASE,"static","MADByTE_Banner_2.png")
 
 
 class MADByTE_Main(QMainWindow):
     def __init__(self):
-        __version__ = 'GUI Version 4.3'
+        __version__ = 'GUI Version 4.4'
         super(MADByTE_Main, self).__init__()
         uic.loadUi(os.path.join(BASE, 'static','MADByTE_GUI_v4_2.ui'),self)
 
@@ -33,34 +34,33 @@ class MADByTE_Main(QMainWindow):
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-        # setup window details
+        ### setup window details
         self.Version_Label.setText(__version__)
         self.setWindowIcon(QIcon(LOGO_PATH))
-        self.NMR_Data_Directory_Select.clicked.connect(self.Select_NMR_Data_Directory)
-        self.Select_Project_Directory.clicked.connect(self.Select_Project_Directory_Fx)
         self.Hppm_Input.setText('0.05')
         self.Cppm_Input.setText('0.40')
         self.Hppm_Input_2.setText('0.03')
         self.Cppm_Input_2.setText('0.40')
         self.Consensus_Error_Input.setText('0.03')
         self.Similarity_Ratio_Input.setText('0.50')
-        self.RemoveSampleFromListButton.clicked.connect(self.Remove_From_Sample_List)
-        self.MADByTE_Button_2.clicked.connect(self.prompt_MADByTE)
-        self.ViewNetwork.clicked.connect(self.ViewNetwork_launch)
-        self.TOCSY_Net_Button_2.clicked.connect(self.MADByTE_Networking_Launch)
+        Banner_Pixmap = QPixmap(Banner_Path)
         Logo_Pixmap = QPixmap(LOGO_PATH)
         self.Logo_Space.setPixmap(Logo_Pixmap.scaled(121,101,Qt.KeepAspectRatio,Qt.SmoothTransformation))
-        self.Plot_Proton_Button.clicked.connect(self.View_1D_Data)
-        self.VIEWHSQC_2.clicked.connect(self.View_HSQC_Data)
-        self.VIEWTOCSY_2.clicked.connect(self.View_TOCSY_Data)
-        self.Update_Log.clicked.connect(self.Update_Log_Fx)
-        self.Dereplicate_Button.clicked.connect(self.Dereplication_Report)
-        self.Extract_Node_Color_Button.clicked.connect(self.Select_Extract_Color)
-        self.Spin_Node_Color_Button.clicked.connect(self.Select_Spin_Color)
-        self.Load_Parameters_Button.clicked.connect(self.Load_Parameters)
+        self.Banner_Space.setPixmap(Banner_Pixmap.scaled(681,121,Qt.KeepAspectRatio,Qt.SmoothTransformation))
         self.Extract_Node_Size_Box.setText('15')
         self.Feature_Node_Size_Box.setText('10')
         self.Spin_Max_Size.setText('20')
+        self.Dereplicate_Button.setEnabled(False)
+        self.SMART_Export_Button.setEnabled(False)
+        self.Export_Derep_File_Button.setEnabled(False)
+        self.Plot_Proton_Button.setEnabled(False)
+        self.VIEWHSQC_2.setEnabled(False)
+        self.VIEWTOCSY_2.setEnabled(False)
+        self.MADByTE_Button_2.setEnabled(False)
+        self.TOCSY_Net_Button_2.setEnabled(False)
+        self.Multiplet_Merger_Checkbox.setChecked(True)
+        for NMR_Datatype in ['Bruker','Mestrenova']:#,'JOEL','Agilent','NMRPipe','Peak Lists]:
+            self.NMR_Data_Type_Combo_Box.addItem(NMR_Datatype)
         self.Network_Filename_Input.setText("MADByTE")
         ### Bioactivity Layering values ###
         self.High_Activity_Box.setText('1.0')
@@ -72,11 +72,24 @@ class MADByTE_Main(QMainWindow):
         self.Bioactivity_Network_Name_Box.setText("Bioactivity_Network")
         self.SMART_Export_Button.clicked.connect(self.SMART_Export_Fx)
         self.Export_Derep_File_Button.clicked.connect(self.Export_Derep_File)
-        ###
-        self.Multiplet_Merger_Checkbox.setChecked(True)
-        for NMR_Datatype in ['Bruker','Mestrenova']:#,'Agilent','NMRPipe']:
-            self.NMR_Data_Type_Combo_Box.addItem(NMR_Datatype)
-        ###Connecting Buttons to F(x)####
+        ###Connect Buttons to Fx ###
+        self.NMR_Data_Directory_Select.clicked.connect(self.Select_NMR_Data_Directory)
+        self.Select_Project_Directory.clicked.connect(self.Select_Project_Directory_Fx)
+        self.RemoveSampleFromListButton.clicked.connect(self.Remove_From_Sample_List)
+        self.MADByTE_Button_2.clicked.connect(self.prompt_MADByTE)
+        self.ViewNetwork.clicked.connect(self.ViewNetwork_launch)
+        self.TOCSY_Net_Button_2.clicked.connect(self.MADByTE_Networking_Launch)
+        self.actionDocumentation.triggered.connect(self.Launch_Documentation)
+        self.actionExamples.triggered.connect(self.Launch_Example)
+        self.Plot_Proton_Button.clicked.connect(self.View_1D_Data)
+        self.VIEWHSQC_2.clicked.connect(self.View_HSQC_Data)
+        self.VIEWTOCSY_2.clicked.connect(self.View_TOCSY_Data)
+        self.Update_Log.clicked.connect(self.Update_Log_Fx)
+        self.Dereplicate_Button.clicked.connect(self.Dereplication_Report)
+        self.Extract_Node_Color_Button.clicked.connect(self.Select_Extract_Color)
+        self.Spin_Node_Color_Button.clicked.connect(self.Select_Spin_Color)
+        self.Load_Parameters_Button.clicked.connect(self.Load_Parameters)
+        ###Create the Plotting Window for the NMR Data####
         Plotted = self.plot
         global vLine
         global hLine
@@ -101,6 +114,11 @@ class MADByTE_Main(QMainWindow):
                 self.Drop_Down_List_Networks.addItem(Network)
 
     ###Functions####
+    def Launch_Documentation(self):
+        subprocess.Popen([os.path.join('Documentation','MADByTE_User_Guide.pdf')],shell=True)
+    def Launch_Example(self):
+        subprocess.Popen([os.path.join('Documentation','MADByTE_Example.pdf')],shell=True)
+        
     def Load_Existing_Networks(self,MasterOutput):
         for Network in os.listdir(DEFAULT_NETWORKS):
             if 'html' in Network:
@@ -152,6 +170,7 @@ class MADByTE_Main(QMainWindow):
             self.BatchSamplesList.addItem(item)
         for NMR_Dataset in os.listdir(DataDirectory):
             self.NMR_Data_View_Selector.addItem(NMR_Dataset)
+            self.Plot_Proton_Button.setEnabled(True)
         return DataDirectory #Raw Data Directory (analogous to input_dir)
 
     def Select_Project_Directory_Fx(self):
@@ -160,9 +179,17 @@ class MADByTE_Main(QMainWindow):
         MasterOutput = os.path.join(Directory_Location)
         for Processed_Dataset in os.listdir(MasterOutput):
             self.Dereplication_Report_Sample_Select.addItem(Processed_Dataset)
+        if len(os.listdir(MasterOutput))>0:
+            self.Dereplicate_Button.setEnabled(True)
+            self.SMART_Export_Button.setEnabled(True)
+            self.Export_Derep_File_Button.setEnabled(True)
         for Network in os.listdir(MasterOutput):
             if 'html' in Network:
                 self.Drop_Down_List_Networks.addItem(Network)
+        self.TOCSY_Net_Button_2.setEnabled(True)
+        self.MADByTE_Button_2.setEnabled(True)
+        self.VIEWHSQC_2.setEnabled(True)
+        self.VIEWTOCSY_2.setEnabled(True)
         return MasterOutput #Output Directory
 
     def Remove_From_Sample_List(self):
@@ -206,8 +233,6 @@ class MADByTE_Main(QMainWindow):
 
     #################################################################
     ## The Dereplication Report was made to do dereplication through HSQC pattern matching
-    ## This is the original way it was coded - working on a way to streamline this and improve returned results. 
-    ## 
 
     def Dereplication_Report(self):
         ID = self.Dereplication_Report_Sample_Select.currentText()
@@ -346,7 +371,7 @@ class MADByTE_Main(QMainWindow):
         self.threadpool.start(ss_worker)
 
 
-    #####Plotting Functions######
+    ###Plotting Functions###
     def mouseMoved(self,evt):
         pos = evt
         if self.plot.sceneBoundingRect().contains(pos):
@@ -355,7 +380,7 @@ class MADByTE_Main(QMainWindow):
         vLine.setPos(mousePoint.x())
         hLine.setPos(mousePoint.y())
 
-    ###############How to view 1D NMR Data#################
+    ###How to view 1D NMR Data###
     def View_1D_Data(self):
         try:
             self.plot.clear()
