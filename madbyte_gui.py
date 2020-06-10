@@ -487,13 +487,14 @@ def PopUP(Type,message):
 # from pyqtgraph import PlotWidget
 
 if __name__ == "__main__":
+    print("MADByTE is loading...")
     import sys
     app = QApplication(sys.argv)
     window = MADByTE_Main()
     window.setWindowIcon(QIcon(LOGO_PATH))
     if os.name == "nt":
         import ctypes
-        myappid = u'MADByTE.MADByTE_NMR.v8' # arbitrary string
+        myappid = u'MADByTE.MADByTE_NMR' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid) #sets the tray icon for windows 10.
     window.show()
     sys.exit(app.exec_())
