@@ -17,7 +17,7 @@ The easiest way to install madbyte is using the Anaconda Python distribution. To
 
 ```
 conda create -y -n madbyte python=3.7
-conda install -y -n madbyte -c conda-forge libspatialindex rtree joblib networkx bokeh>=1.0 pandas matplotlib tqdm pyqt pyqtgraph
+conda install -y -n madbyte -c conda-forge libspatialindex rtree joblib networkx bokeh\>=1.0 pandas matplotlib tqdm pyqt pyqtgraph
 conda install -y -n madbyte -c bioconda nmrglue
 ```
 
