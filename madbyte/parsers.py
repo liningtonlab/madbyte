@@ -180,37 +180,56 @@ def mestrenova_parser(name, input_dir, output_dir, tocsy_precision=3, hsqc_preci
 
     # Iterate over all dirs in MestReNova data dir for sample
     for dir_ in os.listdir(data_dir):
-        sample_dir = os.path.join(data_dir, dir_)
-            # In case a file exits in the path
-        if not os.path.isdir(sample_dir):
-            # logger.warn(f"{sample_dir} is not a directory - skipping")
-            continue
-        for file in [f for f in os.listdir(sample_dir) if os.path.isfile(os.path.join(sample_dir,f))]:
-            if 'HSQC' in file:
-                hsqc_dir = sample_dir
-            if 'TOCSY' or 'COSY' in file:
-                tocsy_dir  = sample_dir
-
+        if dir_ == name:
+            sample_dir = os.path.join(data_dir, dir_)
+                # In case a file exits in the path
+            if not os.path.isdir(sample_dir):
+                # logger.warn(f"{sample_dir} is not a directory - skipping")
+                continue
+            for file in [f for f in os.listdir(sample_dir) if os.path.isfile(os.path.join(sample_dir,f))]:
+                if 'HSQC' in file:
+                    hsqc_dir = sample_dir
+                if 'TOCSY' or 'COSY' in file:
+                    tocsy_dir  = sample_dir
+            ### HSQC and TOCSY Importing from Mestrenova
+            for i in os.listdir(sample_dir):
+                if 'HSQC' in i:
+                    file = i
+                    open_file = open(os.path.join(sample_dir,file),'r')
+                    lines = open_file.readlines()
+                    Data_Lines = lines[1:]
+                    Data_Dict_List = []
+                    for line in Data_Lines:
+                        Data_Dict= dict()
+                        Values = line.split('\t')
+                        if len(Values)>1:
+                            Data_Dict['C_PPM']=Values[0]
+                            Data_Dict['H_PPM']=Values[1]
+                            Data_Dict['Intensity']=Values[2]
+                            Data_Dict_List.append(Data_Dict)
+                    data = pd.DataFrame(Data_Dict_List)
+                    hsqc_data = data.copy().astype("float").round(hsqc_precision).sort_values(by=["H_PPM"], ascending=True)
+                elif 'TOCSY' or 'COSY' in i:
+                    file = i
+                    open_file = open(os.path.join(sample_dir,file),'r')
+                    lines = open_file.readlines()
+                    Data_Lines = lines[1:]
+                    Data_Dict_List = []
+                    for line in Data_Lines:
+                        Data_Dict= dict()
+                        Values = line.split('\t')
+                        if len(Values)>1:
+                            Data_Dict['Ha']=Values[0]
+                            Data_Dict['Hb']=Values[1]
+                            Data_Dict['Intensity']=Values[2]
+                            Data_Dict_List.append(Data_Dict)
+                    data = pd.DataFrame(Data_Dict_List)
+                    tocsy_data = data.copy().astype("float").round(tocsy_precision).sort_values(by=["Ha"], ascending=True)
+        else:
+            logger.error('There was an issue finding the file for %s. Check to ensure that the name of the file and the name of the directory follow the correct conventions.',name)
     if not all([hsqc_dir, tocsy_dir]):
         logger.error("Missing data directory for samples %s", name)
         raise Exception(f"NMR data missing in data directories for {name}")
-
-    ### HSQC and TOCSY Importing from Mestrenova
-    if hsqc_dir == tocsy_dir:
-        mestrenova_dir = hsqc_dir
-        for i in os.listdir(mestrenova_dir):
-            if 'HSQC' in i:
-                file = i
-                data = pd.read_csv(os.path.join(mestrenova_dir,file),delimiter='\t',skiprows=1)
-                data.columns=['C_PPM','H_PPM','Intensity','MT1','MT2','MT3','MT4','MT5','MT6','MT7']
-                data=data.drop(['MT1','MT2','MT3','MT4','MT5','MT6','MT7'],axis=1)
-                hsqc_data = data.copy().astype("float").round(hsqc_precision).sort_values(by=["H_PPM"], ascending=True)
-            if 'TOCSY' or 'COSY' in i:
-                file = i
-                data = pd.read_csv(os.path.join(mestrenova_dir,file),delimiter='\t',skiprows=1,header=None)
-                data.columns=['Ha','Hb','Intensity','MT1','MT2','MT3','MT4','MT5','MT6','MT7']
-                data=data.drop(['MT1','MT2','MT3','MT4','MT5','MT6','MT7'],axis=1)
-                tocsy_data = data.copy().astype("float").round(tocsy_precision).sort_values(by=["Ha"], ascending=True)
     ### HSQC Import finishing steps
     hsqc_data.Identity = name
     hsqc_data.to_json(
