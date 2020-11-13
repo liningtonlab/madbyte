@@ -1,6 +1,5 @@
 name: madbyte
 channels:
-  - bioconda
   - conda-forge
   - defaults
 dependencies:
@@ -10,8 +9,12 @@ dependencies:
   - libspatialindex
   - matplotlib
   - networkx
-  - nmrglue
   - pandas
   - pyqt
+  - pyqtgraph
   - rtree
   - tqdm
+  - scipy
+  - joblib
+  - pip:
+    - nmrglue
