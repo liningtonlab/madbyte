@@ -1,0 +1,17 @@
+name: madbyte
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - pip
+  - bokeh>=1.0
+  - libspatialindex
+  - matplotlib
+  - networkx
+  - nmrglue
+  - pandas
+  - pyqt
+  - rtree
+  - tqdm
