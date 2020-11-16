@@ -346,6 +346,7 @@ class MADByTE_Main(QMainWindow):
             hppm_error=Hppm_Error,
             tocsy_error=Tocsy_Error,
             merge_multiplets=Multiplet_Merger,
+            solvent="dmso",
         )
         corr_worker = Worker(
             fn=MADByTE.correlation_matrix_generation,
