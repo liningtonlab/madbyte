@@ -95,11 +95,13 @@ class MADByTE_Main(QMainWindow):
         global hLine
         vLine = InfiniteLine(angle=90, movable=False)
         hLine = InfiniteLine(angle=0, movable=False)
+        Plotted.enableAutoRange(True)
         Plotted.addItem(vLine, ignoreBounds=True)
         Plotted.addItem(hLine, ignoreBounds=True)
         Plotted.setMouseTracking(True)
         Plotted.showGrid(x=True,y=True,alpha=0.75)
         Plotted.scene().sigMouseMoved.connect(self.mouseMoved)
+        self.Solvent_comboBox.addItems(['DMSO-D6','MeOD','CDCl3','D2O'])
         ###Default Values for colors for networking###
         global Spin_color
         Spin_color = "#009999"
@@ -175,6 +177,9 @@ class MADByTE_Main(QMainWindow):
 
     def Select_Project_Directory_Fx(self):
         Directory_Location = QFileDialog.getExistingDirectory(self)
+        if Directory_Location == '':
+            PopUP('Please Select A Project Directory', 'Please select a directory to store the project results in. It is recommended to create a new project directory for each experiment processing or batch of samples.')
+            return
         global MasterOutput
         MasterOutput = os.path.join(Directory_Location)
         for Processed_Dataset in os.listdir(MasterOutput):
@@ -208,6 +213,7 @@ class MADByTE_Main(QMainWindow):
     def MADByTE_Networking(self,Spin_color,Extract_color):
         # Generates Network - allows for regen of network without reprocessing of files (updates size/colors)
         # Relevant Values: Colors and Sizes
+        self.Drop_Down_List_Networks.clear()
         Extract_Node_Size = int(self.Extract_Node_Size_Box.text())
         Feature_Node_Size = int(self.Feature_Node_Size_Box.text())
         Filename = self.Network_Filename_Input.text() or "MADByTE" # Default if nothing entered
@@ -336,6 +342,7 @@ class MADByTE_Main(QMainWindow):
 
         setup_logging("MADByTE_Log.txt", fpath=MasterOutput, level=logging.DEBUG)
         # Define workers to start processing
+        Solvent = self.Solvent_comboBox.currentText()
         ss_worker = Worker(
             fn=MADByTE.spin_system_construction,
             sample_list=Sample_List,
@@ -346,7 +353,7 @@ class MADByTE_Main(QMainWindow):
             hppm_error=Hppm_Error,
             tocsy_error=Tocsy_Error,
             merge_multiplets=Multiplet_Merger,
-            solvent="dmso",
+            solvent=Solvent,
         )
         corr_worker = Worker(
             fn=MADByTE.correlation_matrix_generation,
@@ -405,7 +412,7 @@ class MADByTE_Main(QMainWindow):
             self.plot.invertX(True)
             self.plot.invertY(False)
         except:
-            PopUP('Data not found','Selected Dataset not found. Please process in Topspin Prior to running MADByTE. ')
+            PopUP('Data Not Found','1H data not found. \n This may be for a few reasons: \n \n * MADByTE can only display data processed by Topspin.\n * The FID is corrupted and cannot be read. \n  * The pulse program file is missing or corrupted.')
 
     def View_HSQC_Data(self):
         try:
