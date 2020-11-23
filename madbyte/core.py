@@ -68,7 +68,7 @@ def construct_spin_system(
 
     restricted_zones = [
         Filter(["H_PPM", "C_PPM"], [(0.0, 2.4), (100.0,  210.0)]), # Solvent band and under, square 1
-        Filter(["H_PPM", "C_PPM"], [(0.0, 7.0), (170.0, 210.0)]), # Odd region that I've never observed a signal for
+        Filter(["H_PPM", "C_PPM"], [(0.0, 7.0), (170.0, 210.0)]), # Region of atypical shift patterns
         Filter(["H_PPM", "C_PPM"], [(7.0, 13.0), (0.0, 50.0)]), # Upper left corner of the spectra
     ]
 
