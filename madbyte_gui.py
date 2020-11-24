@@ -117,9 +117,9 @@ class MADByTE_Main(QMainWindow):
 
     ###Functions####
     def Launch_Documentation(self):
-        subprocess.Popen([os.path.join('Documentation','MADByTE_User_Guide.pdf')],shell=True)
+        subprocess.Popen([os.path.join('Documentation','MADByTE_User_Manual.pdf')],shell=True)
     def Launch_Example(self):
-        subprocess.Popen([os.path.join('Documentation','MADByTE_Example.pdf')],shell=True)
+        subprocess.Popen([os.path.join('Documentation','MADByTE_Quick_Start_Tutorial.pdf')],shell=True)
 
     def Load_Existing_Networks(self,MasterOutput):
         for Network in os.listdir(DEFAULT_NETWORKS):
@@ -147,7 +147,7 @@ class MADByTE_Main(QMainWindow):
         elif self.Multiplet_Merger_Checkbox.isChecked() == False:
             Multiplet_Merger = False
         Similarity_Cutoff = float(self.Similarity_Ratio_Input.text())
-        PopUP("Parameters Loaded","MADByTE Parameters Loaded.")
+        PopUP("Parameters Loaded","MADByTE parameters Loaded.")
 
     def Select_Extract_Color(self):
         global Extract_color
@@ -204,8 +204,11 @@ class MADByTE_Main(QMainWindow):
             self.BatchSamplesList.takeItem(self.BatchSamplesList.row(item)) #removes selected sample from list
 
     def openFileNameDialog(self):
-        fileName,_ = QFileDialog.getOpenFileName(self)
-        return fileName
+        try:
+            fileName,_ = QFileDialog.getOpenFileName(self)
+            return fileName
+        except:
+            PopUP('Select Directory',"Please select a directory.")
 
     def MADByTE_Networking_Launch(self):
         self.MADByTE_Networking(Spin_color,Extract_color)
@@ -220,21 +223,23 @@ class MADByTE_Main(QMainWindow):
         Similarity_Cutoff = float(self.Similarity_Ratio_Input.text())
         Max_Spin_Size = int(self.Spin_Max_Size.text())
         colors = {'spin':Spin_color,'extract':Extract_color,'standard':"#0ffbff"}
-
-        MADByTE.generate_network(
-            MasterOutput,
-            Similarity_Cutoff,
-            Filename,
-            Cppm_Error,
-            Hppm_Error,
-            colors,
-            Extract_Node_Size,
-            Feature_Node_Size,
-            Max_Spin_Size
-        )
-        self.Load_Existing_Networks(MasterOutput)
-        PopUP("Networking Completed","MADByTE Networking completed. Please select the network from the drop down list to view it.")
-        self.Update_Log_Fx()
+        try: 
+            MADByTE.generate_network(
+                MasterOutput,
+                Similarity_Cutoff,
+                Filename,
+                Cppm_Error,
+                Hppm_Error,
+                colors,
+                Extract_Node_Size,
+                Feature_Node_Size,
+                Max_Spin_Size
+            )
+            self.Load_Existing_Networks(MasterOutput)
+            PopUP("Networking Completed","MADByTE networking completed. Please select the network from the drop down list to view it.")
+            self.Update_Log_Fx()
+        except:
+            PopUP('Networking Error','Networking could not be completed due to an error.')
 
 
     #################################################################
@@ -336,6 +341,7 @@ class MADByTE_Main(QMainWindow):
         Similarity_Cutoff,
         nmr_data_type
     ):
+        
         Sample_List = []
         for x in range(self.BatchSamplesList.count()):
             Sample_List.append(self.BatchSamplesList.item(x).text())
@@ -377,7 +383,7 @@ class MADByTE_Main(QMainWindow):
         corr_worker.signals.finished.connect(corr_complete)
         # Execute
         self.threadpool.start(ss_worker)
-
+        
 
     ###Plotting Functions###
     def mouseMoved(self,evt):
