@@ -147,6 +147,20 @@ class MADByTE_Main(QMainWindow):
         elif self.Multiplet_Merger_Checkbox.isChecked() == False:
             Multiplet_Merger = False
         Similarity_Cutoff = float(self.Similarity_Ratio_Input.text())
+        
+        try:
+            MasterOutput
+            DataDirectory
+            self.MADByTE_Button_2.setEnabled(True)
+        except:
+            try: 
+                DataDirectory
+            except: 
+                PopUP('Please Select NMR Data Directory','Please select an NMR data directory before proceeding.')
+            try:
+                MasterOutput
+            except:
+                PopUP('Please Select Project Directory','Please select a project directory before proceeding.')
         PopUP("Parameters Loaded","MADByTE parameters Loaded.")
 
     def Select_Extract_Color(self):
@@ -191,8 +205,6 @@ class MADByTE_Main(QMainWindow):
         for Network in os.listdir(MasterOutput):
             if 'html' in Network:
                 self.Drop_Down_List_Networks.addItem(Network)
-        self.TOCSY_Net_Button_2.setEnabled(True)
-        self.MADByTE_Button_2.setEnabled(True)
         self.VIEWHSQC_2.setEnabled(True)
         self.VIEWTOCSY_2.setEnabled(True)
         return MasterOutput #Output Directory
@@ -377,6 +389,7 @@ class MADByTE_Main(QMainWindow):
                 "MADByTE Analysis and Correlation Matrix Generation has completed on these datasets."
             )
             self.Update_Log_Fx()
+        self.TOCSY_Net_Button_2.setEnabled(True)
 
         # Tell workers to execute functions when complete
         ss_worker.signals.finished.connect(ss_complete)
