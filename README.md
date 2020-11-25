@@ -23,7 +23,3 @@ conda activate madbyte
 python madbyte_gui.py
 ```
 
-### TODO:
-
-- cleanup documentation
-- add solvent specification to GUI
