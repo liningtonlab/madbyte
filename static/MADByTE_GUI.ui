@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1399</width>
-    <height>871</height>
+    <width>1377</width>
+    <height>895</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -279,24 +279,13 @@ background-color: rgb(255, 255, 255);</string>
        </item>
        <item row="4" column="0">
         <layout class="QGridLayout" name="gridLayout">
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="Hppm_Input">
+         <item row="5" column="1">
+          <widget class="QCheckBox" name="Multiplet_Merger_Checkbox">
            <property name="toolTip">
-            <string>How close do Proton resonances have to be? </string>
+            <string>Merges points based off of the coupling restriction. If points are too close in the 1H dimension, and too close in the C dimension, they are merged as a cenral point. </string>
            </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_8">
            <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Hppm Error:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Set MADByTE Parameters&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>Multiplet Merger</string>
            </property>
           </widget>
          </item>
@@ -307,10 +296,10 @@ background-color: rgb(255, 255, 255);</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
-          <widget class="QLineEdit" name="Similarity_Ratio_Input">
-           <property name="toolTip">
-            <string>How much overlap must a spin system have before a network line is drawn. This can be altered even after initial processing and affects the networking step.</string>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_12">
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Similarity Ratio:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -321,24 +310,17 @@ background-color: rgb(255, 255, 255);</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Cppm Error:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_12">
-           <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Similarity Ratio:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
-         </item>
          <item row="3" column="0">
           <widget class="QLabel" name="label_11">
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Consensus Error:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="Similarity_Ratio_Input">
+           <property name="toolTip">
+            <string>How much overlap must a spin system have before a network line is drawn. This can be altered even after initial processing and affects the networking step.</string>
            </property>
           </widget>
          </item>
@@ -355,13 +337,41 @@ background-color: rgb(255, 255, 255);</string>
            </property>
           </spacer>
          </item>
-         <item row="5" column="1">
-          <widget class="QCheckBox" name="Multiplet_Merger_Checkbox">
-           <property name="toolTip">
-            <string>Merges points based off of the coupling restriction. If points are too close in the 1H dimension, and too close in the C dimension, they are merged as a cenral point. </string>
-           </property>
+         <item row="0" column="0" colspan="2">
+          <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Multiplet Merger</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Set MADByTE Parameters&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Cppm Error:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="Hppm_Input">
+           <property name="toolTip">
+            <string>How close do Proton resonances have to be? </string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Hppm Error:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QComboBox" name="Solvent_comboBox"/>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Solvent: &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -458,19 +468,6 @@ background-color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
-        <spacer name="verticalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
       </layout>
      </widget>
     </widget>
@@ -484,7 +481,7 @@ background-color: rgb(255, 255, 255);</string>
         <x>70</x>
         <y>40</y>
         <width>941</width>
-        <height>162</height>
+        <height>194</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
@@ -678,7 +675,7 @@ background-color: rgb(255, 255, 255);</string>
           <string notr="true">background-color: rgb(228, 234, 234);</string>
          </property>
          <property name="text">
-          <string>View HSQC</string>
+          <string>View HSQC Points</string>
          </property>
         </widget>
        </item>
@@ -691,7 +688,7 @@ background-color: rgb(255, 255, 255);</string>
           <string notr="true">background-color: rgb(228, 234, 234);</string>
          </property>
          <property name="text">
-          <string>View TOCSY</string>
+          <string>View TOCSY Points</string>
          </property>
         </widget>
        </item>
@@ -731,7 +728,7 @@ background-color: rgb(255, 255, 255);</string>
         <x>30</x>
         <y>80</y>
         <width>371</width>
-        <height>123</height>
+        <height>147</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
@@ -897,8 +894,8 @@ background-color: rgb(255, 255, 255);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1399</width>
-     <height>26</height>
+     <width>1377</width>
+     <height>31</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuHelp">

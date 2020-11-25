@@ -22,6 +22,7 @@ def spin_system_construction(
     merge_multiplets: bool = True,
     restart: bool = False,
     n_jobs: int = -1,
+    solvent: str ="dmso",
 ):
     logger.info(f"Processing {len(sample_list)} samples...")
     project_dir = Path(project_dir)
@@ -39,6 +40,7 @@ def spin_system_construction(
                 tocsy_error=tocsy_error,
                 merge_multiplets=merge_multiplets,
                 restart=restart,
+                 solvent=solvent,
             )
         except Exception as e:
             import traceback

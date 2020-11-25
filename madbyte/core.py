@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 import madbyte.utils as utils
-from madbyte.filter import Filter
+from madbyte.filter import Filter, SOLVENT_DICT
 from madbyte.logging import get_logger
 from madbyte.parsers import acd_sim_parser, mestrenova_parser, topspin_parser
 
@@ -22,7 +22,9 @@ def construct_spin_system(
     tocsy_error=0.05,
     merge_multiplets=True,
     restart=True,
+    solvent="dmso",
 ):
+    assert solvent in SOLVENT_DICT.keys()
     input_dir = Path(input_dir)
     project_dir = Path(project_dir)
     output_dir = project_dir.joinpath(name)
@@ -62,13 +64,11 @@ def construct_spin_system(
     ## HSQC Filtration step
     ## Define filters
     # These represent stripes of Hppm which have been forbidden
-    solvent_filters = [
-        Filter(["H_PPM"], [(2.48, 2.52)]), # DMSO
-        Filter(["H_PPM"], [(3.28, 3.32)]), # Water
-    ]
+    solvent_filters = SOLVENT_DICT[solvent]
+
     restricted_zones = [
         Filter(["H_PPM", "C_PPM"], [(0.0, 2.4), (100.0,  210.0)]), # Solvent band and under, square 1
-        Filter(["H_PPM", "C_PPM"], [(0.0, 7.0), (170.0, 210.0)]), # Odd region that I've never observed a signal for
+        Filter(["H_PPM", "C_PPM"], [(0.0, 7.0), (170.0, 210.0)]), # Region of atypical shift patterns
         Filter(["H_PPM", "C_PPM"], [(7.0, 13.0), (0.0, 50.0)]), # Upper left corner of the spectra
     ]
 

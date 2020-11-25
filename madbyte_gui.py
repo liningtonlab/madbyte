@@ -95,11 +95,13 @@ class MADByTE_Main(QMainWindow):
         global hLine
         vLine = InfiniteLine(angle=90, movable=False)
         hLine = InfiniteLine(angle=0, movable=False)
+        Plotted.enableAutoRange(True)
         Plotted.addItem(vLine, ignoreBounds=True)
         Plotted.addItem(hLine, ignoreBounds=True)
         Plotted.setMouseTracking(True)
         Plotted.showGrid(x=True,y=True,alpha=0.75)
         Plotted.scene().sigMouseMoved.connect(self.mouseMoved)
+        self.Solvent_comboBox.addItems(['DMSO-D6','MeOD','CDCl3','D2O'])
         ###Default Values for colors for networking###
         global Spin_color
         Spin_color = "#009999"
@@ -115,9 +117,9 @@ class MADByTE_Main(QMainWindow):
 
     ###Functions####
     def Launch_Documentation(self):
-        subprocess.Popen([os.path.join('Documentation','MADByTE_User_Guide.pdf')],shell=True)
+        subprocess.Popen([os.path.join('Documentation','MADByTE_User_Manual.pdf')],shell=True)
     def Launch_Example(self):
-        subprocess.Popen([os.path.join('Documentation','MADByTE_Example.pdf')],shell=True)
+        subprocess.Popen([os.path.join('Documentation','MADByTE_Quick_Start_Tutorial.pdf')],shell=True)
 
     def Load_Existing_Networks(self,MasterOutput):
         for Network in os.listdir(DEFAULT_NETWORKS):
@@ -145,7 +147,21 @@ class MADByTE_Main(QMainWindow):
         elif self.Multiplet_Merger_Checkbox.isChecked() == False:
             Multiplet_Merger = False
         Similarity_Cutoff = float(self.Similarity_Ratio_Input.text())
-        PopUP("Parameters Loaded","MADByTE Parameters Loaded.")
+        
+        try:
+            MasterOutput
+            DataDirectory
+            self.MADByTE_Button_2.setEnabled(True)
+        except:
+            try: 
+                DataDirectory
+            except: 
+                PopUP('Please Select NMR Data Directory','Please select an NMR data directory before proceeding.')
+            try:
+                MasterOutput
+            except:
+                PopUP('Please Select Project Directory','Please select a project directory before proceeding.')
+        PopUP("Parameters Loaded","MADByTE parameters Loaded.")
 
     def Select_Extract_Color(self):
         global Extract_color
@@ -175,6 +191,9 @@ class MADByTE_Main(QMainWindow):
 
     def Select_Project_Directory_Fx(self):
         Directory_Location = QFileDialog.getExistingDirectory(self)
+        if Directory_Location == '':
+            PopUP('Please Select A Project Directory', 'Please select a directory to store the project results in. It is recommended to create a new project directory for each experiment processing or batch of samples.')
+            return
         global MasterOutput
         MasterOutput = os.path.join(Directory_Location)
         for Processed_Dataset in os.listdir(MasterOutput):
@@ -186,8 +205,6 @@ class MADByTE_Main(QMainWindow):
         for Network in os.listdir(MasterOutput):
             if 'html' in Network:
                 self.Drop_Down_List_Networks.addItem(Network)
-        self.TOCSY_Net_Button_2.setEnabled(True)
-        self.MADByTE_Button_2.setEnabled(True)
         self.VIEWHSQC_2.setEnabled(True)
         self.VIEWTOCSY_2.setEnabled(True)
         return MasterOutput #Output Directory
@@ -199,8 +216,11 @@ class MADByTE_Main(QMainWindow):
             self.BatchSamplesList.takeItem(self.BatchSamplesList.row(item)) #removes selected sample from list
 
     def openFileNameDialog(self):
-        fileName,_ = QFileDialog.getOpenFileName(self)
-        return fileName
+        try:
+            fileName,_ = QFileDialog.getOpenFileName(self)
+            return fileName
+        except:
+            PopUP('Select Directory',"Please select a directory.")
 
     def MADByTE_Networking_Launch(self):
         self.MADByTE_Networking(Spin_color,Extract_color)
@@ -208,27 +228,30 @@ class MADByTE_Main(QMainWindow):
     def MADByTE_Networking(self,Spin_color,Extract_color):
         # Generates Network - allows for regen of network without reprocessing of files (updates size/colors)
         # Relevant Values: Colors and Sizes
+        self.Drop_Down_List_Networks.clear()
         Extract_Node_Size = int(self.Extract_Node_Size_Box.text())
         Feature_Node_Size = int(self.Feature_Node_Size_Box.text())
         Filename = self.Network_Filename_Input.text() or "MADByTE" # Default if nothing entered
         Similarity_Cutoff = float(self.Similarity_Ratio_Input.text())
         Max_Spin_Size = int(self.Spin_Max_Size.text())
         colors = {'spin':Spin_color,'extract':Extract_color,'standard':"#0ffbff"}
-
-        MADByTE.generate_network(
-            MasterOutput,
-            Similarity_Cutoff,
-            Filename,
-            Cppm_Error,
-            Hppm_Error,
-            colors,
-            Extract_Node_Size,
-            Feature_Node_Size,
-            Max_Spin_Size
-        )
-        self.Load_Existing_Networks(MasterOutput)
-        PopUP("Networking Completed","MADByTE Networking completed. Please select the network from the drop down list to view it.")
-        self.Update_Log_Fx()
+        try: 
+            MADByTE.generate_network(
+                MasterOutput,
+                Similarity_Cutoff,
+                Filename,
+                Cppm_Error,
+                Hppm_Error,
+                colors,
+                Extract_Node_Size,
+                Feature_Node_Size,
+                Max_Spin_Size
+            )
+            self.Load_Existing_Networks(MasterOutput)
+            PopUP("Networking Completed","MADByTE networking completed. Please select the network from the drop down list to view it.")
+            self.Update_Log_Fx()
+        except:
+            PopUP('Networking Error','Networking could not be completed due to an error.')
 
 
     #################################################################
@@ -330,12 +353,14 @@ class MADByTE_Main(QMainWindow):
         Similarity_Cutoff,
         nmr_data_type
     ):
+        
         Sample_List = []
         for x in range(self.BatchSamplesList.count()):
             Sample_List.append(self.BatchSamplesList.item(x).text())
 
         setup_logging("MADByTE_Log.txt", fpath=MasterOutput, level=logging.DEBUG)
         # Define workers to start processing
+        Solvent = self.Solvent_comboBox.currentText()
         ss_worker = Worker(
             fn=MADByTE.spin_system_construction,
             sample_list=Sample_List,
@@ -346,6 +371,7 @@ class MADByTE_Main(QMainWindow):
             hppm_error=Hppm_Error,
             tocsy_error=Tocsy_Error,
             merge_multiplets=Multiplet_Merger,
+            solvent=Solvent,
         )
         corr_worker = Worker(
             fn=MADByTE.correlation_matrix_generation,
@@ -363,13 +389,14 @@ class MADByTE_Main(QMainWindow):
                 "MADByTE Analysis and Correlation Matrix Generation has completed on these datasets."
             )
             self.Update_Log_Fx()
+        self.TOCSY_Net_Button_2.setEnabled(True)
 
         # Tell workers to execute functions when complete
         ss_worker.signals.finished.connect(ss_complete)
         corr_worker.signals.finished.connect(corr_complete)
         # Execute
         self.threadpool.start(ss_worker)
-
+        
 
     ###Plotting Functions###
     def mouseMoved(self,evt):
@@ -404,7 +431,7 @@ class MADByTE_Main(QMainWindow):
             self.plot.invertX(True)
             self.plot.invertY(False)
         except:
-            PopUP('Data not found','Selected Dataset not found. Please process in Topspin Prior to running MADByTE. ')
+            PopUP('Data Not Found','1H data not found. \n This may be for a few reasons: \n \n * MADByTE can only display data processed by Topspin.\n * The FID is corrupted and cannot be read. \n  * The pulse program file is missing or corrupted.')
 
     def View_HSQC_Data(self):
         try:
