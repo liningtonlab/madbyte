@@ -490,6 +490,15 @@ def trim_associations(G):
         if d['_type'] != "spin" and len(H.edges(n)) == 0:
             H.remove_node(n)
     return H
+def filter_singletons(G):
+    H = G.copy()
+    for n, d in H.copy().nodes.items():
+        if d['_type'] == "spin" and len(eval(d.get('members', '[]')))< 2:
+            H.remove_node(n)
+    for n, d in H.copy().nodes.items():
+        if d['_type'] != "spin" and len(H.edges(n)) == 0:
+            H.remove_node(n)
+    return H
 
 
 def association_network(
@@ -613,7 +622,8 @@ def hybridize_network(G, master, colors, hppm_error, cppm_error):
     H.add_nodes_from(sample_nodes)
     H.add_nodes_from(new_nodes, _color=colors['spin'], _type="spin")
     H.add_edges_from(new_edges, weight=1.0)
-    return H
+    K = filter_singletons(H)
+    return K
 
 
 def get_master(project_dir):

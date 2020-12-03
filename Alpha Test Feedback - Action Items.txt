@@ -1,0 +1,63 @@
+
+
+Feedback from Alpha and Items Found: 
+
+###################################
+Installation Process Feedback: 
+###################################
+
+Anaconda not in default location – cannot use windows scripts to launch and install. - Amendment added to the user manual. 
+
+* Command line instructions –
+* if MADByTE is downloaded from Git, the main directory changes from "madbyte" to "madbyte-main". 
+    This changes the command line instructions with respect to directory navigation in the install functions
+
+* Need to add paragraph explaining how to open a terminal in Mac. 
+    Suggested: “Navigate to the folder “madbyte-main” (that’s what my folder was called, not “madbyte” as you have it in the manual), right-click, and click “New Terminal Tab at folder” to open up a terminal/console to enter the following commands:” 
+
+###################################
+Design and UI: 
+###################################
+
+* Design function to change tooltips according to status (selected NMR output…ect..)- IN PROGRESS
+
+* Redo list population to show most recently generated full annotation network first. - Not Done
+
+* Success prompt should not appear to be an error message. - COMPLETED
+
+* Error code when canceling the file selection in bioactivity layering. - COMPLETED
+
+* If NMR Data Directory and Project Dir are the same, flag an error - COMPLETED
+
+* Add ability to reprocess data fully - Not done
+    Currently, it checks the project dir to see if an analysis has already been completed. It would be beneficial to create a prompt to either 're-run analysis' or 'cancel'
+
+* Remove restriction to view network until MADByTE is run if existing analysis is selected as the project dir. - Not Done
+
+
+###################################
+Functional Features: 
+###################################
+
+* Native JEOL data integration - Not Done (have templates to design parsers)
+
+* CSV data integration - Not Done 
+
+* Peak Tracker - Not Done
+Search through log file to follow the processing of a specific peak.
+    I.E. User searches for TOCSY correlation 4.15: 
+        *Peak 4.15 in TOCSY F1 was aligned to 4.14 in F2  
+        *4.14 was matched to HSQC Point (4.14,78.6)
+        *4.14 was mapped to spin system feature XXX *OR* 4.14 was dropped from analysis in step XXX
+
+* Remove single resonance connections from hybrid network strucuture - COMPLETED
+
+
+
+
+###################################
+Manual Changes/Updates: 
+###################################
+
+* Explicit instructions when downloading from git vs using a git repo manager - Not Done
+* Update Network Section to reflect dropping of single resonance associations from hybrid network - Not Done

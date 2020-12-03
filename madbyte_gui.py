@@ -156,12 +156,16 @@ class MADByTE_Main(QMainWindow):
             try: 
                 DataDirectory
             except: 
-                PopUP('Please Select NMR Data Directory','Please select an NMR data directory before proceeding.')
+                PopUP('Please Select NMR Data Directory','Please select an NMR data directory before proceeding.','Error')
             try:
                 MasterOutput
             except:
-                PopUP('Please Select Project Directory','Please select a project directory before proceeding.')
-        PopUP("Parameters Loaded","MADByTE parameters Loaded.")
+                PopUP('Please Select Project Directory','Please select a project directory before proceeding.','Error')
+        try: 
+            if MasterOutput == DataDirectory:
+                PopUP('Please Differentiate Directories','The NMR data directory is where the processed NMR datafiles are, and the project directory is the MADByTE output location. They must be different.','Error')
+        except:
+            PopUP("Parameters Loaded","MADByTE parameters Loaded.","Info")
 
     def Select_Extract_Color(self):
         global Extract_color
@@ -192,7 +196,7 @@ class MADByTE_Main(QMainWindow):
     def Select_Project_Directory_Fx(self):
         Directory_Location = QFileDialog.getExistingDirectory(self)
         if Directory_Location == '':
-            PopUP('Please Select A Project Directory', 'Please select a directory to store the project results in. It is recommended to create a new project directory for each experiment processing or batch of samples.')
+            PopUP('Please Select A Project Directory', 'Please select a directory to store the project results in. It is recommended to create a new project directory for each experiment processing or batch of samples.','Error')
             return
         global MasterOutput
         MasterOutput = os.path.join(Directory_Location)
@@ -220,7 +224,7 @@ class MADByTE_Main(QMainWindow):
             fileName,_ = QFileDialog.getOpenFileName(self)
             return fileName
         except:
-            PopUP('Select Directory',"Please select a directory.")
+            PopUP('Select Directory',"Please select a directory.",'Error')
 
     def MADByTE_Networking_Launch(self):
         self.MADByTE_Networking(Spin_color,Extract_color)
@@ -235,23 +239,23 @@ class MADByTE_Main(QMainWindow):
         Similarity_Cutoff = float(self.Similarity_Ratio_Input.text())
         Max_Spin_Size = int(self.Spin_Max_Size.text())
         colors = {'spin':Spin_color,'extract':Extract_color,'standard':"#0ffbff"}
-        try: 
-            MADByTE.generate_network(
-                MasterOutput,
-                Similarity_Cutoff,
-                Filename,
-                Cppm_Error,
-                Hppm_Error,
-                colors,
-                Extract_Node_Size,
-                Feature_Node_Size,
-                Max_Spin_Size
-            )
-            self.Load_Existing_Networks(MasterOutput)
-            PopUP("Networking Completed","MADByTE networking completed. Please select the network from the drop down list to view it.")
-            self.Update_Log_Fx()
-        except:
-            PopUP('Networking Error','Networking could not be completed due to an error.')
+        # try: 
+        MADByTE.generate_network(
+            MasterOutput,
+            Similarity_Cutoff,
+            Filename,
+            Cppm_Error,
+            Hppm_Error,
+            colors,
+            Extract_Node_Size,
+            Feature_Node_Size,
+            Max_Spin_Size
+        )
+        self.Load_Existing_Networks(MasterOutput)
+        PopUP("Networking Completed","MADByTE networking completed. Please select the network from the drop down list to view it.",'Info')
+        self.Update_Log_Fx()
+        # except:
+        #     PopUP('Networking Error','Networking could not be completed due to an error.','Error')
 
 
     #################################################################
@@ -298,7 +302,7 @@ class MADByTE_Main(QMainWindow):
         Sample_Dataset.columns = ['1H','13C']
         Sample_Dataset = Sample_Dataset.sort_values(by=['1H'],ascending = True).round({'1H':2,'13C':1})
         Sample_Dataset.to_csv(os.path.join(MasterOutput,ID,ID+'_SMART_Peak_List.csv'))
-        PopUP('Dataset Exported',str('The HSQC Data for'+ID+' has been converted to a CSV formatted for direct import into SMART. Go to SMART.ucsd.edu to search this dataset against over 40k HSQC spectra'))
+        PopUP('Dataset Exported',str('The HSQC Data for'+ID+' has been converted to a CSV formatted for direct import into SMART. Go to SMART.ucsd.edu to search this dataset against over 40k HSQC spectra'),'Info')
     def Export_Derep_File(self):
         ID = self.Dereplication_Report_Sample_Select.currentText()
         Sample_Dataset = pd.read_json(os.path.join(MasterOutput,ID,ID+'_HSQC_Preprocessed.json')).drop(["Intensity"],axis=1)
@@ -315,10 +319,10 @@ class MADByTE_Main(QMainWindow):
                 contents = f.read()
             self.Madbyte_Log_Viewer.setText(contents)
         except:
-            PopUP('Log file not found.',"The MADByTE log file was not found. Please ensure you have selected a project directory to load the file.")
+            PopUP('Log file not found.',"The MADByTE log file was not found. Please ensure you have selected a project directory to load the file.",'Error')
 
     def prompt_MADByTE(self):
-        PopUP("Begining MADByTE","Now Begining MADByTE Analysis. \n Based on how many samples were submitted, this may take a while. Please hit 'ok'. ")
+        PopUP("Begining MADByTE","Now Begining MADByTE Analysis. \n Based on how many samples were submitted, this may take a while. Please hit 'ok'. ",'Info')
         ID = 'temp'
         global Entity
         Entity = "Extract"
@@ -385,9 +389,7 @@ class MADByTE_Main(QMainWindow):
             # Trigger correlation network
             self.threadpool.start(corr_worker)
         def corr_complete():
-            PopUP('MADByTE Analysis Completed',
-                "MADByTE Analysis and Correlation Matrix Generation has completed on these datasets."
-            )
+            PopUP('MADByTE Analysis Completed',"MADByTE Analysis and Correlation Matrix Generation has completed on these datasets.","Info")
             self.Update_Log_Fx()
         self.TOCSY_Net_Button_2.setEnabled(True)
 
@@ -431,7 +433,7 @@ class MADByTE_Main(QMainWindow):
             self.plot.invertX(True)
             self.plot.invertY(False)
         except:
-            PopUP('Data Not Found','1H data not found. \n This may be for a few reasons: \n \n * MADByTE can only display data processed by Topspin.\n * The FID is corrupted and cannot be read. \n  * The pulse program file is missing or corrupted.')
+            PopUP('Data Not Found','1H data not found. \n This may be for a few reasons: \n \n * MADByTE can only display data processed by Topspin.\n * The FID is corrupted and cannot be read. \n  * The pulse program file is missing or corrupted.','Error')
 
     def View_HSQC_Data(self):
         try:
@@ -442,7 +444,7 @@ class MADByTE_Main(QMainWindow):
             self.plot.invertX(True)
             self.plot.invertY(True)
         except:
-            PopUP('Data not found','Selected Dataset not found. Please process in Topspin Prior to running MADByTE. For 2D Datasets, the displayed data is derived from peak picking lists.')
+            PopUP('Data not found','Selected Dataset not found. Please process in Topspin Prior to running MADByTE. For 2D Datasets, the displayed data is derived from peak picking lists.','Error')
 
     def View_TOCSY_Data(self):
         try:
@@ -455,7 +457,7 @@ class MADByTE_Main(QMainWindow):
             vLine = InfiniteLine(angle=45, movable=False)
             self.plot.addItem(vLine)
         except:
-            PopUP('Data not found','Selected Dataset not found. Please process in Topspin Prior to running MADByTE. For 2D Datasets, the displayed data is derived from peak picking lists.')
+            PopUP('Data not found','Selected Dataset not found. Please process in Topspin Prior to running MADByTE. For 2D Datasets, the displayed data is derived from peak picking lists.','Error')
     def Bioactivity_Plotting_Fx(self):
         try:
             Bioactivity_Low = float(self.Low_Activity_Box.text())
@@ -464,20 +466,35 @@ class MADByTE_Main(QMainWindow):
             fname = self.Bioactivity_Network_Name_Box.text()
             title = fname
             MADByTE.plotting.Bioactivity_plot(MasterOutput,Network_In_Path,Bioactivity_Data_In,title,fname,Bioactivity_Low,Bioactivity_Med,Bioactivity_High)
-            PopUP('Network successfully created','The Bioactivity Network has been created successfully.')
+            PopUP('Network successfully created','The Bioactivity Network has been created successfully.','Info')
         except:
-            PopUP('Something went wrong',"Please ensure you've correctly set the values for the bioactivity cutoffs and that the bioactivity data is in the correct format.")
+            PopUP('Something went wrong',"Please ensure you've correctly set the values for the bioactivity cutoffs and that the bioactivity data is in the correct format.",'Error')
     def Select_Network_To_Layer_Fx(self):
         global Network_In_Path
         Network_In_Path = self.openFileNameDialog()
         if '.graphml' not in Network_In_Path:
-            PopUP('Incorrect data type','Please select the .graphml version of the network, the HTML file will not work.')
+            PopUP('Incorrect data type','Please select the .graphml version of the network, the HTML file will not work.','Error')
 
     def Select_Bioactivity_File_Fx(self):
         global Bioactivity_Data_In
         Bioactivity_Data_In = self.openFileNameDialog()
+        if Directory_Location == '':
+            PopUP('Please Select A Bioactivity File', 'Please select a bioactivity file to continue.','Error')
+            return
         if '.csv' not in Bioactivity_Data_In:
-            PopUP('Incorrect data type','Please select a CSV file.')
+            PopUP('Incorrect data type','Please select a CSV file.','Error')
+    
+    # def Ready_Check(self):
+    #     try:
+    #         MasterOutput
+    #         DataDirectory
+    #         self.MADByTE_Button_2.self.MADByTE_Button_2.setEnabled(True)
+    #         self.MADByTE_Button_2.setToolTip('Select a project directory before proceeding.')
+    #     except:
+    #         try:
+    #             MasterOutput
+    #         except:
+    #             self.MADByTE_Button_2.setToolTip('Select a project directory before proceeding.')
 
 
 
@@ -502,11 +519,16 @@ class Network_Viewer(QMainWindow):
         self.Network_View_Plot_Area.show()
 
 
-def PopUP(Type,message):
+def PopUP(title,message,type):
     msg = QMessageBox()
-    msg.setIcon(QMessageBox.Critical)
+    if type =='Error':
+        msg.setIcon(QMessageBox.Critical)
+    elif type == "Info":
+        msg.setIcon(QMessageBox.Information)
+    msg.setWindowIcon(QIcon(LOGO_PATH))
     msg.setText(message)
-    msg.setWindowTitle(Type)
+    msg.setWindowTitle(title)
+    
     msg.exec_()
 
 
