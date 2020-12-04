@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt, QThreadPool
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import (QApplication, QColorDialog, QFileDialog,
-                             QMainWindow, QMessageBox,QTableWidgetItem)
+                             QMainWindow, QMessageBox,QTableWidgetItem, QDialog)
 from pyqtgraph import InfiniteLine
 
 import madbyte as MADByTE
@@ -122,15 +122,15 @@ class MADByTE_Main(QMainWindow):
         subprocess.Popen([os.path.join('Documentation','MADByTE_Quick_Start_Tutorial.pdf')],shell=True)
 
     def Load_Existing_Networks(self,MasterOutput):
-        for Network in os.listdir(DEFAULT_NETWORKS):
-            if 'html' in Network:
-                self.Drop_Down_List_Networks.addItem(Network)
         try:
             for Network in os.listdir(os.path.join(MasterOutput)):
                 if 'html' in Network:
                     self.Drop_Down_List_Networks.addItem(Network)
         except:
             pass
+        for Network in os.listdir(DEFAULT_NETWORKS):
+            if 'html' in Network:
+                self.Drop_Down_List_Networks.addItem(Network)
 
     def Load_Parameters(self):
         ID = 'temp'
@@ -161,10 +161,10 @@ class MADByTE_Main(QMainWindow):
                 MasterOutput
             except:
                 PopUP('Please Select Project Directory','Please select a project directory before proceeding.','Error')
-        try: 
-            if MasterOutput == DataDirectory:
+         
+        if MasterOutput == DataDirectory:
                 PopUP('Please Differentiate Directories','The NMR data directory is where the processed NMR datafiles are, and the project directory is the MADByTE output location. They must be different.','Error')
-        except:
+        else:
             PopUP("Parameters Loaded","MADByTE parameters Loaded.","Info")
 
     def Select_Extract_Color(self):
@@ -191,6 +191,7 @@ class MADByTE_Main(QMainWindow):
         for NMR_Dataset in os.listdir(DataDirectory):
             self.NMR_Data_View_Selector.addItem(NMR_Dataset)
             self.Plot_Proton_Button.setEnabled(True)
+        self.Ready_Check()
         return DataDirectory #Raw Data Directory (analogous to input_dir)
 
     def Select_Project_Directory_Fx(self):
@@ -211,6 +212,9 @@ class MADByTE_Main(QMainWindow):
                 self.Drop_Down_List_Networks.addItem(Network)
         self.VIEWHSQC_2.setEnabled(True)
         self.VIEWTOCSY_2.setEnabled(True)
+        self.Ready_Check()
+        if 'correlation_matrix.json' in os.listdir(MasterOutput): 
+            self.TOCSY_Net_Button_2.setEnabled(True)
         return MasterOutput #Output Directory
 
     def Remove_From_Sample_List(self):
@@ -239,23 +243,27 @@ class MADByTE_Main(QMainWindow):
         Similarity_Cutoff = float(self.Similarity_Ratio_Input.text())
         Max_Spin_Size = int(self.Spin_Max_Size.text())
         colors = {'spin':Spin_color,'extract':Extract_color,'standard':"#0ffbff"}
-        # try: 
-        MADByTE.generate_network(
-            MasterOutput,
-            Similarity_Cutoff,
-            Filename,
-            Cppm_Error,
-            Hppm_Error,
-            colors,
-            Extract_Node_Size,
-            Feature_Node_Size,
-            Max_Spin_Size
-        )
-        self.Load_Existing_Networks(MasterOutput)
-        PopUP("Networking Completed","MADByTE networking completed. Please select the network from the drop down list to view it.",'Info')
-        self.Update_Log_Fx()
-        # except:
-        #     PopUP('Networking Error','Networking could not be completed due to an error.','Error')
+        try: 
+            MADByTE.generate_network(
+                MasterOutput,
+                Similarity_Cutoff,
+                Filename,
+                Cppm_Error,
+                Hppm_Error,
+                colors,
+                Extract_Node_Size,
+                Feature_Node_Size,
+                Max_Spin_Size
+            )
+            self.Load_Existing_Networks(MasterOutput)
+            PopUP("Networking Completed","MADByTE networking completed. Please select the network from the drop down list to view it.",'Info')
+            self.Update_Log_Fx()
+        except:
+            try: 
+                Cppm_Error
+            except:
+                PopUP('Load Parameters Before Proceeding','Please load the MADByTE parameters before generating a network.','Error')
+            PopUP('Networking Error','Network constructin could not be completed due to an error.','Error')
 
 
     #################################################################
@@ -365,6 +373,14 @@ class MADByTE_Main(QMainWindow):
         setup_logging("MADByTE_Log.txt", fpath=MasterOutput, level=logging.DEBUG)
         # Define workers to start processing
         Solvent = self.Solvent_comboBox.currentText()
+        Restart_Flag = False
+        if 'correlation_matrix.json' in os.listdir(MasterOutput): 
+            DF_Dialog = Data_Found_Dialog()
+            if DF_Dialog.exec_():
+                print('Reprocessing Data')
+                Restart_Flag = True
+            else:
+                print('Reprocessing Canceled')
         ss_worker = Worker(
             fn=MADByTE.spin_system_construction,
             sample_list=Sample_List,
@@ -375,6 +391,7 @@ class MADByTE_Main(QMainWindow):
             hppm_error=Hppm_Error,
             tocsy_error=Tocsy_Error,
             merge_multiplets=Multiplet_Merger,
+            restart = Restart_Flag,
             solvent=Solvent,
         )
         corr_worker = Worker(
@@ -484,17 +501,23 @@ class MADByTE_Main(QMainWindow):
         if '.csv' not in Bioactivity_Data_In:
             PopUP('Incorrect data type','Please select a CSV file.','Error')
     
-    # def Ready_Check(self):
-    #     try:
-    #         MasterOutput
-    #         DataDirectory
-    #         self.MADByTE_Button_2.self.MADByTE_Button_2.setEnabled(True)
-    #         self.MADByTE_Button_2.setToolTip('Select a project directory before proceeding.')
-    #     except:
-    #         try:
-    #             MasterOutput
-    #         except:
-    #             self.MADByTE_Button_2.setToolTip('Select a project directory before proceeding.')
+    def Ready_Check(self):
+        try:
+            MasterOutput
+        except:
+            self.MADByTE_Button_2.setToolTip('Select a project directory before proceeding.')
+        try:
+            DataDirectory
+        except:
+            self.MADByTE_Button_2.setToolTip('Select an NMR data directory.')
+        try:
+            MasterOutput
+            DataDirectory
+            self.MADByTE_Button_2.setToolTip('Ready to run MADByTE Analysis.')
+            self.MADByTE_Button_2.setEnabled(True)
+        except:
+            return
+        
 
 
 
@@ -530,6 +553,14 @@ def PopUP(title,message,type):
     msg.setWindowTitle(title)
     
     msg.exec_()
+
+class Data_Found_Dialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(os.path.join(BASE,'static','Re_Run.ui'),self)
+        self.ReRun_Button.clicked.connect(self.accept)
+        self.Cancel_Button.clicked.connect(self.reject)
+        self.setWindowIcon(QIcon(LOGO_PATH))
 
 
 # from mplwidget import MplWidget
