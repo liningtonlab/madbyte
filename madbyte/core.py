@@ -143,9 +143,9 @@ def create_outputs(
 ):
     if not colors:
         colors = {
-            "spin": "#009999", # Dark cyan
-            "extract": "#009900", # Dark lime green
-            "standard": "#000000", # Black
+            "spin": "#009999", # GREY
+            "extract": "#ff3333", # RED
+            "standard": "#0FFBFF", # Black
         }
     project_dir = Path(project_dir)
     corr_mat = pd.read_json(project_dir.joinpath("correlation_matrix.json"))

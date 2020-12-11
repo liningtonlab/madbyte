@@ -106,7 +106,7 @@ class MADByTE_Main(QMainWindow):
         global Spin_color
         Spin_color = "#009999"
         global Extract_color
-        Extract_color = "#009900"
+        Extract_color = "#ff3333"
         # Load sample networks if there...
         if not os.path.isdir(DEFAULT_NETWORKS):
             os.mkdir(DEFAULT_NETWORKS)
