@@ -26,7 +26,7 @@ Banner_Path = os.path.join(BASE,"static","MADByTE_Banner_2.png")
 
 class MADByTE_Main(QMainWindow):
     def __init__(self):
-        __version__ = '1.0.0'
+        __version__ = '1.1.0'
         super(MADByTE_Main, self).__init__()
         uic.loadUi(os.path.join(BASE, 'static','MADByTE_GUI.ui'),self)
 
