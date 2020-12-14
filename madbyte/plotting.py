@@ -115,11 +115,11 @@ def Bioactivity_plot(MasterOutput,Network_In_Path,Bioactivity_Data_In,title='Bio
         if i in Bioactivity_Data.index.to_list():
             Bioactivity_Score = Bioactivity_Data.loc[i].Bioactivity_Score
             if 0<=Bioactivity_Score<Bioactivity_Low:
-                color_map[i]='#0000FF'
+                color_map[i]='#EBEFBB'
             if Bioactivity_Low<=Bioactivity_Score<Bioactivity_Med:
-                color_map[i]='#FF4500'
+                color_map[i]='#F9A600'
             if Bioactivity_Score>=Bioactivity_High:
-                color_map[i]='#FF0000'
+                color_map[i]='#C43C00'
         else:
             pass
     nx.set_node_attributes(Network_In,color_map,'_color')

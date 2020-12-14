@@ -54,9 +54,13 @@ def spin_system_construction(
         delayed(do_calc)(n) for n in sample_list
     )
     master = utils.get_master(project_dir)
-    for (name, ss) in results:
-        master = utils.add_spin_systems_to_master(name, ss, master)
-    utils.save_master(project_dir, master)
+    try:
+        for (name, ss) in results:
+            master = utils.add_spin_systems_to_master(name, ss, master)
+        utils.save_master(project_dir, master)
+    except TypeError:
+        pass
+        
 
 
 def correlation_matrix_generation(
