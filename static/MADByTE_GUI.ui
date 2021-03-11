@@ -727,15 +727,32 @@ background-color: rgb(255, 255, 255);</string>
        <rect>
         <x>30</x>
         <y>80</y>
-        <width>371</width>
-        <height>147</height>
+        <width>398</width>
+        <height>209</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="Hppm_Input_2">
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="Cppm_Input_2">
          <property name="toolTip">
-          <string>How close do Proton resonances have to be? </string>
+          <string>How close do Carbon resonances have to  be? </string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="4">
+        <widget class="QPushButton" name="SMART_Export_Button">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(228, 234, 234);</string>
+         </property>
+         <property name="text">
+          <string>Export Sample Data For SMART</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QCheckBox" name="Require_Spin_System_checkBox">
+         <property name="text">
+          <string>Require Spin System Match</string>
          </property>
         </widget>
        </item>
@@ -746,6 +763,23 @@ background-color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
+       <item row="4" column="0" colspan="4">
+        <widget class="QPushButton" name="Export_Derep_File_Button">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(228, 234, 234);</string>
+         </property>
+         <property name="text">
+          <string>Export Sample as Dereplication Standard</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLabel" name="label_29">
+         <property name="text">
+          <string>Of</string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="2">
         <widget class="QLabel" name="label_3">
          <property name="text">
@@ -753,24 +787,17 @@ background-color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="Hppm_Input_2">
+         <property name="toolTip">
+          <string>How close do Proton resonances have to be? </string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_13">
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Cppm Error:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="Cppm_Input_2">
-         <property name="toolTip">
-          <string>How close do Carbon resonances have to  be? </string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Hppm Error:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -784,23 +811,23 @@ background-color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="4">
-        <widget class="QPushButton" name="SMART_Export_Button">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(228, 234, 234);</string>
-         </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_9">
          <property name="text">
-          <string>Export Sample Data For SMART</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Hppm Error:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0" colspan="4">
-        <widget class="QPushButton" name="Export_Derep_File_Button">
+       <item row="2" column="3">
+        <widget class="QLineEdit" name="Overlap_Score_lineEdit"/>
+       </item>
+       <item row="5" column="0" colspan="4">
+        <widget class="QPushButton" name="Load_Derep_Library_Button">
          <property name="styleSheet">
           <string notr="true">background-color: rgb(228, 234, 234);</string>
          </property>
          <property name="text">
-          <string>Export Sample as Dereplication Standard</string>
+          <string>Load Custom Dereplication Library</string>
          </property>
         </widget>
        </item>
@@ -820,6 +847,19 @@ background-color: rgb(255, 255, 255);</string>
       </property>
       <property name="sortingEnabled">
        <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="Export_Derep_Button">
+      <property name="geometry">
+       <rect>
+        <x>321</x>
+        <y>600</y>
+        <width>121</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Export As CSV</string>
       </property>
      </widget>
     </widget>

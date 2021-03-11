@@ -5,6 +5,7 @@ import os
 import subprocess
 import nmrglue as ng
 import pandas as pd
+import json
 # import pyqtgraph as pg
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QThreadPool
@@ -17,23 +18,25 @@ from pyqtgraph import InfiniteLine
 import madbyte as MADByTE
 from madbyte.gui import Worker
 from madbyte.logging import setup_logging
+from madbyte import utils
+import itertools
 
 BASE = os.path.dirname(__file__)
 DEFAULT_NETWORKS = os.path.join(BASE, "Networks")
 LOGO_PATH = os.path.join(BASE, "static", "MADByTE_LOGO.png")
 Banner_Path = os.path.join(BASE,"static","MADByTE_Banner_2.png")
+Dereplication_Database = 'Dereplication_Database'
 
 
 class MADByTE_Main(QMainWindow):
     def __init__(self):
-        __version__ = '1.1.0'
+        __version__ = '1.2.0'
         super(MADByTE_Main, self).__init__()
         uic.loadUi(os.path.join(BASE, 'static','MADByTE_GUI.ui'),self)
 
         # setup threadpool for processing
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
-
         ### setup window details
         self.Version_Label.setText(__version__)
         self.setWindowIcon(QIcon(LOGO_PATH))
@@ -43,6 +46,7 @@ class MADByTE_Main(QMainWindow):
         self.Cppm_Input_2.setText('0.40')
         self.Consensus_Error_Input.setText('0.03')
         self.Similarity_Ratio_Input.setText('0.50')
+        self.Overlap_Score_lineEdit.setText('0.30')
         Banner_Pixmap = QPixmap(Banner_Path)
         Logo_Pixmap = QPixmap(LOGO_PATH)
         self.Logo_Space.setPixmap(Logo_Pixmap.scaled(121,101,Qt.KeepAspectRatio,Qt.SmoothTransformation))
@@ -89,6 +93,8 @@ class MADByTE_Main(QMainWindow):
         self.Extract_Node_Color_Button.clicked.connect(self.Select_Extract_Color)
         self.Spin_Node_Color_Button.clicked.connect(self.Select_Spin_Color)
         self.Load_Parameters_Button.clicked.connect(self.Load_Parameters)
+        self.Export_Derep_Button.clicked.connect(self.Export_Derep_Results)
+        self.Load_Derep_Library_Button.clicked.connect(self.Select_Dereplication_Library)
         ###Create the Plotting Window for the NMR Data####
         Plotted = self.plot
         global vLine
@@ -267,43 +273,79 @@ class MADByTE_Main(QMainWindow):
 
 
     #################################################################
-    ## The Dereplication Report was made to do dereplication through HSQC pattern matching
+    ## The Dereplication Report was made to do dereplication through HSQC pattern matching ##
+    ## The HSQC matching is only done when one of the spin systems has been found in the sample ## 
 
     def Dereplication_Report(self):
+        print('Comparing sample against the dereplication library... ')
+        def point_comparison(observed_value, expectedVal, tolerance):
+            observed_value = float(observed_value)
+            expectedVal = float(expectedVal)
+            if (expectedVal - tolerance < observed_value) & (expectedVal + tolerance > observed_value):
+                return True
+            return False
+        def HSQC_Scoring(Database_Sample_ID,Sample_Analyzed,MasterOutput,ID,result_dict):
+            if Database_Sample_ID not in Sample_Analyzed: 
+                Sample_Dataset = pd.read_json(os.path.join(MasterOutput,ID,ID+'_HSQC_Preprocessed.json')).drop(["Intensity"],axis=1)
+                Database_Sample = pd.read_json(os.path.join(Dereplication_Database,Database_Sample_ID,"DDF_"+Database_Sample_ID+'_HSQC.json'))
+                Number_Of_Resonances_Sample = len(Sample_Dataset)
+                Number_Of_Resonances_Database_Item = len(Database_Sample)
+                Match_Counter = 0
+                for i in range(Number_Of_Resonances_Database_Item):
+                    Database_Proton = Database_Sample.iloc[i-1].H_PPM
+                    Database_Carbon = Database_Sample.iloc[i-1].C_PPM
+                    for i in range(Number_Of_Resonances_Sample):
+                        Sample_Proton = Sample_Dataset.iloc[i-1].H_PPM
+                        Sample_Carbon = Sample_Dataset.iloc[i-1].C_PPM
+                        if point_comparison(Database_Proton,Sample_Proton,Hppm_Error)==True:
+                            if point_comparison(Database_Carbon,Sample_Carbon,Cppm_Error)==True:
+                                Match_Counter+=1
+                Compound_Match_Ratio = str(Match_Counter)+'/'+str(Number_Of_Resonances_Database_Item)
+                if Match_Counter >= Number_Of_Resonances_Database_Item:
+                    Compound_Match_Ratio = '1'
+                Sample_Analyzed.append(Database_Sample_ID)
+                result_dict[Database_Sample_ID]=Compound_Match_Ratio
+                return result_dict
         ID = self.Dereplication_Report_Sample_Select.currentText()
         Hppm_Error = float(self.Hppm_Input_2.text())
         Cppm_Error = float(self.Cppm_Input_2.text())
-        list_of_Database_compounds = os.listdir(os.path.join('Dereplication_Database'))
+        list_of_Database_compounds = os.listdir(os.path.join(Dereplication_Database))
         self.Dereplication_Report_Table.setColumnCount(2)
         self.Dereplication_Report_Table.setRowCount(len(list_of_Database_compounds)+1)
         self.Dereplication_Report_Table.setHorizontalHeaderLabels(["Compound","Matching Ratio"])
-        Sample_Dataset = pd.read_json(os.path.join(MasterOutput,ID,ID+'_HSQC_Preprocessed.json')).drop(["Intensity"],axis=1)
-        compound_number = 0
-        for i in list_of_Database_compounds:
-            compound_number +=1
-            Database_Sample_ID = i[4:-5]
-            self.Dereplication_Report_Table.setItem(compound_number,0, QTableWidgetItem(str(list_of_Database_compounds[compound_number-1][4:-5])))
-            Database_Sample = pd.read_json(os.path.join('Dereplication_Database',i))
-            Number_Of_Resonances_Sample = len(Sample_Dataset)
-            Number_Of_Resonances_Database_Item = len(Database_Sample)
-            Match_Counter = 0
-            def point_comparison(observed_value, expectedVal, tolerance):
-                observed_value = float(observed_value)
-                expectedVal = float(expectedVal)
-                if (expectedVal - tolerance < observed_value) & (expectedVal + tolerance > observed_value):
-                    return True
-                return False
-            for i in range(Number_Of_Resonances_Database_Item):
-                Database_Proton = Database_Sample.iloc[i-1].H_PPM
-                Database_Carbon = Database_Sample.iloc[i-1].C_PPM
-                for i in range(Number_Of_Resonances_Sample):
-                    Sample_Proton = Sample_Dataset.iloc[i-1].H_PPM
-                    Sample_Carbon = Sample_Dataset.iloc[i-1].C_PPM
-                    if point_comparison(Database_Proton,Sample_Proton,Hppm_Error)==True:
-                        if point_comparison(Database_Carbon,Sample_Carbon,Cppm_Error)==True:
-                            Match_Counter+=1
-            Compound_Match_Ratio = str(Match_Counter)+'/'+str(Number_Of_Resonances_Database_Item)
-            self.Dereplication_Report_Table.setItem(compound_number,1, QTableWidgetItem(Compound_Match_Ratio))
+        Spin_System_Confirmed = False
+        Sample_Analyzed = list()
+        Not_Detected = list()
+        result_dict=dict()
+        if self.Require_Spin_System_checkBox.isChecked()==True: 
+            with open(os.path.join(os.path.join(MasterOutput,ID,ID+'_spin_systems.json'))) as f: 
+                Sample_Spin_Systems = json.load(f)
+                df_sample = pd.DataFrame([{"ID": k, "H_ppm": x[0], "C_ppm": x[1]} for k,v in Sample_Spin_Systems.items() for x in v])
+                df_DDFs = utils.load_spin_systems(os.path.join(Dereplication_Database))
+                df = pd.concat([df_sample,df_DDFs])
+                idxs = df_sample["ID"].unique()
+                idys = df_DDFs["ID"].unique()
+                for idx,idy in itertools.product(idxs,idys):
+                        ratio = utils.ratio_two_systems(idx, idy, df, Hppm_Error, Cppm_Error)
+                        if 'HND_' in idy: 
+                            Database_Sample_ID = str("_".join(idy.split("_")[1:-1]))
+                        elif 'HND_' not in idy: 
+                            Database_Sample_ID= str("_".join(idy.split("_")[:-1]))
+                        if ratio>float(self.Overlap_Score_lineEdit.text()):
+                            HSQC_Scoring(Database_Sample_ID,Sample_Analyzed,MasterOutput,ID,result_dict)
+                        if ratio <=float(self.Overlap_Score_lineEdit.text()):
+                            Not_Detected.append(Database_Sample_ID)
+                            if Database_Sample_ID not in Sample_Analyzed:
+                                result_dict[Database_Sample_ID]='Not Detected'
+        elif self.Require_Spin_System_checkBox.isChecked()==False:
+            for Database_Sample_ID in os.listdir(Dereplication_Database): 
+                result_dict = HSQC_Scoring(Database_Sample_ID,Sample_Analyzed,MasterOutput,ID,result_dict)
+        compound_number=0
+        for Database_Value in result_dict:
+            self.Dereplication_Report_Table.setItem(compound_number,0, QTableWidgetItem(str(Database_Value)))
+            self.Dereplication_Report_Table.setItem(compound_number,1, QTableWidgetItem(result_dict[Database_Value]))
+            compound_number+=1
+        print('Completed.')
     def SMART_Export_Fx(self):
         ID = self.Dereplication_Report_Sample_Select.currentText()
         Sample_Dataset = pd.read_json(os.path.join(MasterOutput,ID,ID+'_HSQC_Preprocessed.json')).drop(["Intensity"],axis=1)
@@ -312,10 +354,50 @@ class MADByTE_Main(QMainWindow):
         Sample_Dataset.to_csv(os.path.join(MasterOutput,ID,ID+'_SMART_Peak_List.csv'))
         PopUP('Dataset Exported',str('The HSQC Data for'+ID+' has been converted to a CSV formatted for direct import into SMART. Go to SMART.ucsd.edu to search this dataset against over 40k HSQC spectra'),'Info')
     def Export_Derep_File(self):
+        from shutil import copyfile
         ID = self.Dereplication_Report_Sample_Select.currentText()
         Sample_Dataset = pd.read_json(os.path.join(MasterOutput,ID,ID+'_HSQC_Preprocessed.json')).drop(["Intensity"],axis=1)
         Sample_Dataset["Identity"] = ID
-        Sample_Dataset.to_json(os.path.join('Dereplication_Database','DDF_'+ID+'.json'))
+        if 'HND_' in ID: 
+            ID2 = ID
+            ID = ID.replace("HND_","")
+        os.mkdir(os.path.join('Dereplication_Database',ID))
+        try:
+            ID2 
+            copyfile(os.path.join(MasterOutput,ID2,ID2+'_spin_systems.json'),os.path.join('Dereplication_Database',ID,ID+'_spin_systems.json'))
+        except: 
+            copyfile(os.path.join(MasterOutput,ID,ID+'_spin_systems.json'),os.path.join('Dereplication_Database',ID,ID+'_spin_systems.json'))
+        Sample_Dataset.to_json(os.path.join('Dereplication_Database',ID,'DDF_'+ID+'_HSQC.json'))
+    def Export_Derep_Results(self):
+        import csv
+        path = QFileDialog.getSaveFileName(
+                self, 'Save File', '', 'CSV(*.csv)')[0]
+        with open(path, 'w',newline='') as stream:
+            writer = csv.writer(stream)
+            headers = []
+            for column in range(self.Dereplication_Report_Table.columnCount()):
+                header = self.Dereplication_Report_Table.horizontalHeaderItem(column)
+                if header is not None:
+                        headers.append(header.text())
+                else:
+                    headers.append("Column " + str(column))
+            writer.writerow(headers)
+            for row in range(self.Dereplication_Report_Table.rowCount()):
+                rowdata = []
+                for column in range(self.Dereplication_Report_Table.columnCount()):
+                    item = self.Dereplication_Report_Table.item(row, column)
+                    if item is not None:
+                        rowdata.append(str(item.text()))
+                        print(str(item.text()))
+                    else:
+                        pass
+                writer.writerow(rowdata)
+
+    def Select_Dereplication_Library(self):
+        global Dereplication_Database
+        Dereplication_Database = QFileDialog.getExistingDirectory(self)
+        print('Custom dereplication library loaded.')
+        return Dereplication_Database
     def ViewNetwork_launch(self):
         self.window2=QMainWindow()
         self.ui = Network_Viewer()
@@ -340,7 +422,6 @@ class MADByTE_Main(QMainWindow):
         Cppm_Error = float(self.Cppm_Input.text())
         global Tocsy_Error
         Tocsy_Error = float(self.Consensus_Error_Input.text())
-        # The new code (MBv8) may not use the multiplet merger function and instead do it by default through alignment
         if self.Multiplet_Merger_Checkbox.isChecked()== True:
             Multiplet_Merger = True
         elif self.Multiplet_Merger_Checkbox.isChecked() == False:
@@ -409,6 +490,9 @@ class MADByTE_Main(QMainWindow):
             PopUP('MADByTE Analysis Completed',"MADByTE Analysis and Correlation Matrix Generation has completed on these datasets.","Info")
             self.Update_Log_Fx()
         self.TOCSY_Net_Button_2.setEnabled(True)
+        self.Dereplicate_Button.setEnabled(True)
+        self.SMART_Export_Button.setEnabled(True)
+        self.Export_Derep_File_Button.setEnabled(True)
 
         # Tell workers to execute functions when complete
         ss_worker.signals.finished.connect(ss_complete)
@@ -538,7 +622,7 @@ class Network_Viewer(QMainWindow):
             f = open(Network_Location, 'r')
         html = f.read()
         f.close()
-        self.Network_View_Plot_Area.setHtml(html)#load(Network_Location)#(QtCore.QUrl.fromLocalFile(Network_Location))
+        self.Network_View_Plot_Area.setHtml(html)
         self.Network_View_Plot_Area.show()
 
 
@@ -562,10 +646,6 @@ class Data_Found_Dialog(QDialog):
         self.Cancel_Button.clicked.connect(self.reject)
         self.setWindowIcon(QIcon(LOGO_PATH))
 
-
-# from mplwidget import MplWidget
-# from pyqtgraph import PlotWidget
-
 if __name__ == "__main__":
     print("MADByTE is loading...")
     import sys
@@ -574,8 +654,11 @@ if __name__ == "__main__":
     window.setWindowIcon(QIcon(LOGO_PATH))
     if os.name == "nt":
         import ctypes
-        myappid = u'MADByTE.MADByTE_NMR' # arbitrary string
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid) #sets the tray icon for windows 10.
+        myappid = u'MADByTE.MADByTE_NMR' 
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid) 
     window.show()
     sys.exit(app.exec_())
+
+
+
 
