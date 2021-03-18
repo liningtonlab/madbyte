@@ -1,8 +1,12 @@
 # MADByTE
 
-MADByTE stands for Metabolomics And Dereplication By Two-dimensional Experiments.
+MADByTE stands for **M**etabolomics **A**nd **D**ereplication **By** **T**wo-dimensional **E**xperiments.
 
 MADByTE allows for comparative analysis of NMR spectra from large sample sets, simultaneously, deriving shared structural features from heteronuclear and homonuclear experiments. Using large sample sets, the common features between each sample can be visualized to aid in sample prioritization and structure characterization of scaffolds present.
+
+If you use this tool, please cite it:
+
+[DOI: 10.1021/acs.jnatprod.0c01076](https://doi.org/10.1021/acs.jnatprod.0c01076)
 
 More information about the MADByTE program, including news, examples, and detailed tutorials can be found at our website:
 
@@ -10,7 +14,7 @@ https://www.madbyte.org/
 
 Documentation for usage and installation can be found in `Documentation/MADByTE_User_Guide.pdf`
 
-Please download the latest release and the instruction in the documentation.
+Please download the latest release and follow the instructions in the documentation for installation.
 
 ### Basic Usage
 
