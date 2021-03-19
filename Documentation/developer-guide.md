@@ -1,6 +1,7 @@
-### TODO: Fill this out
+## Installation
 
-The easiest way to install madbyte is using the Anaconda Python distribution. To install dependencies in a virtual environment:
+The easiest way to install madbyte is using the Anaconda Python distribution. This is vary similar to running the program as an end user. 
+To install dependencies in a virtual environment:
 
 ```bash
 conda env create -f environment.yml
@@ -21,3 +22,7 @@ If you have already installed the madbyte virtual envrionment, then running the 
 Make sure you have pytest installed `conda install pytest`
 
 Then from the root git directory (the one with this README), simple run the `pytest` command. It will autodiscover and run all the tests.
+
+## Contributions
+
+Contributions of features, bug fixes, etc. are welcome! Please fork the repo and create a PR.
