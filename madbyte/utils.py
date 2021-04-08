@@ -535,7 +535,7 @@ def association_network(
     extract_edges = [(row.Spin_System_ID, row.Found_In) for row in master.itertuples()]
     spinsystem_edges = [
         (x,y,get_weight(x,y)) for x,y in combinations(idxs, r=2)
-        if corr_mat.loc[x,y] >= cutoff and not same_sample(x,y)
+        if get_weight(x, y) >= cutoff and not same_sample(x,y)
     ]
 
     # network building
@@ -548,20 +548,23 @@ def association_network(
     plot.create_bokeh(G, "MADByTE Full Association Network - All Spin Systems", project_dir.joinpath(f"{fname}_association_network_all.html"),
         extract_size=extract_size,feature_size=feature_size,)
     nx.write_graphml(G, project_dir.joinpath(f"{fname}_association_network_all.graphml"))
-
-    # Filters unconnected
-    H = trim_associations(G)
-    # nx.write_graphml(G, project_dir.joinpath("test_2.graphml"))
-    plot.create_bokeh(H, "MADByTE Similarity Network - Trimmed Spin Systems", project_dir.joinpath(f"{fname}_similarity_network.html"),
-        extract_size=extract_size,feature_size=feature_size,)
-    nx.write_graphml(H, project_dir.joinpath(f"{fname}_similarity_network_network.graphml"))
-
-    # Join connected associations
-    J = hybridize_network(H,idx_master, colors, hppm_error, cppm_error)
-    plot.create_bokeh(J, "MADByTE Hybrid Association Network", project_dir.joinpath(f"{fname}_hybrid_network.html"),
-        extract_size=extract_size,feature_size=feature_size,)
-    nx.write_graphml(J, project_dir.joinpath(f"{fname}_hybrid_network.graphml"))
-
+    try: 
+        # Filters unconnected
+        H = trim_associations(G)
+        # nx.write_graphml(G, project_dir.joinpath("test_2.graphml"))
+        plot.create_bokeh(H, "MADByTE Similarity Network - Trimmed Spin Systems", project_dir.joinpath(f"{fname}_similarity_network.html"),
+            extract_size=extract_size,feature_size=feature_size,)
+        nx.write_graphml(H, project_dir.joinpath(f"{fname}_similarity_network_network.graphml"))
+    except: 
+        print('Cannot Generate Similarity Network. \n If more than one sample was run, no similarities were found. \n If only was sample was run, please increase the number of samples to compare to in order to generate a similarity network.')
+    try: 
+        # Join connected associations
+        J = hybridize_network(H,idx_master, colors, hppm_error, cppm_error)
+        plot.create_bokeh(J, "MADByTE Hybrid Association Network", project_dir.joinpath(f"{fname}_hybrid_network.html"),
+            extract_size=extract_size,feature_size=feature_size,)
+        nx.write_graphml(J, project_dir.joinpath(f"{fname}_hybrid_network.graphml"))
+    except: 
+        print('Cannot Generate Hybrid Network.')
 
 def neighbour_spins(G, n, samples):
     return list(filter(lambda x: x not in samples, G.neighbors(n)))

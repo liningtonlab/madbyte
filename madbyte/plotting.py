@@ -123,4 +123,5 @@ def Bioactivity_plot(MasterOutput,Network_In_Path,Bioactivity_Data_In,title='Bio
         else:
             pass
     nx.set_node_attributes(Network_In,color_map,'_color')
+    nx.write_graphml(Network_In,str(title+'.graphml'))
     create_bokeh(Network_In, title, os.path.join(MasterOutput,fname+'.html'), extract_size=15, feature_size=10)
