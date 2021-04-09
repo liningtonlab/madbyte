@@ -7,10 +7,8 @@ from madbyte import utils
 
 
 def test_establish_file_structure(project_dir: Path):
-    out_dir = project_dir.joinpath("test")
-    utils.establish_file_structure("test", out_dir, project_dir)
+    utils.establish_file_structure(project_dir)
     assert project_dir.exists()
-    assert out_dir.exists()
     assert project_dir.joinpath("Spin_Systems_Master.json").exists()
 
 
