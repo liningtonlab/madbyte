@@ -244,3 +244,22 @@ def mestrenova_parser(name, input_dir, output_dir, tocsy_precision=3, hsqc_preci
     )
 
     return hsqc_data, tocsy_data
+
+def csv_parser(name, input_dir, output_dir, tocsy_precision=3, hsqc_precision=3):
+    #Allows for manual input of data as CSV files # 
+    Data_Path = os.path.join(input_dir,name)
+    for data in os.listdir(Data_Path):
+        if 'HSQC' in data: 
+            hsqc_data = pd.read_csv(os.path.join(Data_Path,data))
+            hsqc_data = hsqc_data.copy().astype("float").round(hsqc_precision).sort_values(by=["H_PPM"], ascending=True)
+            hsqc_data.Identity = name
+            hsqc_data.to_json(os.path.join(output_dir, f"{name}_HSQC_Preprocessed.json"),orient="records")
+        if 'TOCSY' in data: 
+            tocsy_data = pd.read_csv(os.path.join(Data_Path,data))
+            tocsy_data = tocsy_data.copy().astype("float").round(tocsy_precision).sort_values(by=["Ha"], ascending=True)
+            ### TOCSY IMPORT finishing steps
+            tocsy_data.Identity = name
+            tocsy_data.to_json(os.path.join(output_dir, f"{name}_TOCSY_Preprocessed.json"),orient="records")
+        else:
+            pass
+    return hsqc_data,tocsy_data

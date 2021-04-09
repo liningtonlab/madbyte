@@ -30,7 +30,7 @@ Dereplication_Database = 'Dereplication_Database'
 
 class MADByTE_Main(QMainWindow):
     def __init__(self):
-        __version__ = '1.2.0'
+        __version__ = '1.3.0'
         super(MADByTE_Main, self).__init__()
         uic.loadUi(os.path.join(BASE, 'static','MADByTE_GUI.ui'),self)
 
@@ -63,7 +63,7 @@ class MADByTE_Main(QMainWindow):
         self.MADByTE_Button_2.setEnabled(False)
         self.TOCSY_Net_Button_2.setEnabled(False)
         self.Multiplet_Merger_Checkbox.setChecked(True)
-        for NMR_Datatype in ['Bruker','Mestrenova']:#,'JOEL','Agilent','NMRPipe','Peak Lists]:
+        for NMR_Datatype in ['Bruker','Mestrenova','CSV']:#,'JOEL','Agilent','NMRPipe','Peak Lists]:
             self.NMR_Data_Type_Combo_Box.addItem(NMR_Datatype)
         self.Network_Filename_Input.setText("MADByTE")
         ### Bioactivity Layering values ###
@@ -123,9 +123,15 @@ class MADByTE_Main(QMainWindow):
 
     ###Functions####
     def Launch_Documentation(self):
-        subprocess.Popen([os.path.join('Documentation','MADByTE_User_Manual.pdf')],shell=True)
+        try: 
+            subprocess.call(["open", os.path.join('Documentation','MADByTE_User_Manual.pdf')])
+        except: 
+            subprocess.Popen([os.path.join('Documentation','MADByTE_User_Manual.pdf')],shell=True)
     def Launch_Example(self):
-        subprocess.Popen([os.path.join('Documentation','MADByTE_Quick_Start_Tutorial.pdf')],shell=True)
+        try: 
+            subprocess.call(["open", os.path.join('Documentation','MADByTE_Quick_Start_Tutorial.pdf')])
+        except:
+            subprocess.Popen([os.path.join('Documentation','MADByTE_Quick_Start_Tutorial.pdf')],shell=True)
 
     def Load_Existing_Networks(self,MasterOutput):
         try:
@@ -650,6 +656,7 @@ if __name__ == "__main__":
     print("MADByTE is loading...")
     import sys
     app = QApplication(sys.argv)
+    app.setStyle('Windows')
     window = MADByTE_Main()
     window.setWindowIcon(QIcon(LOGO_PATH))
     if os.name == "nt":
