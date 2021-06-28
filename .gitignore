@@ -3,6 +3,7 @@
 .pylintrc
 .devcontainer/
 .DS_Store
+Dereplication_Database/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

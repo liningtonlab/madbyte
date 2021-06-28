@@ -40,6 +40,8 @@ def topspin_parser(name, input_dir, output_dir, tocsy_precision=3, hsqc_precisio
             hsqc_dir = exp_dir
         elif "dipsi" in content or "cosy" in content:
             tocsy_dir = exp_dir
+        elif "mlev" in content in content:
+            tocsy_dir = exp_dir
 
     logger.debug(f"{name} : HSQC - %s", hsqc_dir)
     logger.debug(f"{name} : TOCSY - %s", tocsy_dir)

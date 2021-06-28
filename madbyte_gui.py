@@ -433,6 +433,7 @@ class MADByTE_Main(QMainWindow):
         elif self.Multiplet_Merger_Checkbox.isChecked() == False:
             Multiplet_Merger = False
         Similarity_Cutoff = float(self.Similarity_Ratio_Input.text())
+        self.Write_Params_File()
         global nmr_data_type
         nmr_data_type = self.NMR_Data_Type_Combo_Box.currentText()
 
@@ -607,7 +608,26 @@ class MADByTE_Main(QMainWindow):
             self.MADByTE_Button_2.setEnabled(True)
         except:
             return
-        
+    def Write_Params_File(self):
+        Path = os.path.join(MasterOutput,'Params.txt')
+        Similarity_Ratio = self.Similarity_Ratio_Input.text()
+        H_tolerance = self.Hppm_Input.text()
+        C_tolerance = self.Cppm_Input.text()
+        if self.Multiplet_Merger_Checkbox.isChecked()== True:
+            Multiplet_Merger = True
+        elif self.Multiplet_Merger_Checkbox.isChecked() == False:
+            Multiplet_Merger = False
+        with open(Path, "w") as file:
+            file.write(
+                'Input_Dir: '+str(DataDirectory)+'\n'+
+                'H Tolerance: '+str(H_tolerance)+'\n'+
+                'C Tolerance: '+str(C_tolerance)+'\n'+
+                'Similarity_Ratio: '+str(Similarity_Ratio)+'\n'+
+                'Solvent: '+str(self.Solvent_comboBox.currentText())+'\n'+
+                'Consensus: '+str(self.Consensus_Error_Input.text())+'\n'+
+                'Multiplet Merger: '+str(Multiplet_Merger)
+
+            )
 
 
 
