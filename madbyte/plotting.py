@@ -114,14 +114,14 @@ def Bioactivity_plot(MasterOutput,Network_In_Path,Bioactivity_Data_In,title='Bio
     for i in Network_In.nodes():
         if i in Bioactivity_Data.index.to_list():
             Bioactivity_Score = Bioactivity_Data.loc[i].Bioactivity_Score
-            if 0<=Bioactivity_Score<Bioactivity_Low:
+            if Bioactivity_Score<Bioactivity_Low:
                 color_map[i]='#EBEFBB'
-            if Bioactivity_Low<=Bioactivity_Score<Bioactivity_Med:
+            if Bioactivity_Med<=Bioactivity_Score<Bioactivity_High:
                 color_map[i]='#F9A600'
             if Bioactivity_Score>=Bioactivity_High:
                 color_map[i]='#C43C00'
         else:
             pass
     nx.set_node_attributes(Network_In,color_map,'_color')
-    nx.write_graphml(Network_In,str(title+'.graphml'))
+    nx.write_graphml(Network_In,os.path.join(MasterOutput,str(title+'.graphml')))
     create_bokeh(Network_In, title, os.path.join(MasterOutput,fname+'.html'), extract_size=15, feature_size=10)
