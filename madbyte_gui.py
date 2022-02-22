@@ -30,7 +30,7 @@ Dereplication_Database = 'Dereplication_Database'
 
 class MADByTE_Main(QMainWindow):
     def __init__(self):
-        __version__ = '1.3.0'
+        __version__ = '1.3.1'
         super(MADByTE_Main, self).__init__()
         uic.loadUi(os.path.join(BASE, 'static','MADByTE_GUI.ui'),self)
 
@@ -63,7 +63,7 @@ class MADByTE_Main(QMainWindow):
         self.MADByTE_Button_2.setEnabled(False)
         self.TOCSY_Net_Button_2.setEnabled(False)
         self.Multiplet_Merger_Checkbox.setChecked(True)
-        for NMR_Datatype in ['Bruker','Mestrenova','CSV']:#,'JOEL','Agilent','NMRPipe','Peak Lists]:
+        for NMR_Datatype in ['Bruker','Mestrenova','JEOL','CSV']:#,,'Agilent','NMRPipe','Peak Lists]:
             self.NMR_Data_Type_Combo_Box.addItem(NMR_Datatype)
         self.Network_Filename_Input.setText("MADByTE")
         ### Bioactivity Layering values ###

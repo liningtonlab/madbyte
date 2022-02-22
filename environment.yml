@@ -10,7 +10,7 @@ dependencies:
   - matplotlib
   - networkx
   - pandas
-  - pyqt>=5.15.4
+  - pyqt
   - pyqtgraph
   - rtree
   - tqdm

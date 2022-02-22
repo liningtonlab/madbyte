@@ -40,7 +40,7 @@ def topspin_parser(name, input_dir, output_dir, tocsy_precision=3, hsqc_precisio
             hsqc_dir = exp_dir
         elif "dipsi" in content or "cosy" in content:
             tocsy_dir = exp_dir
-        elif "mlev" in content in content:
+        elif "mlev" in content:
             tocsy_dir = exp_dir
 
     logger.debug(f"{name} : HSQC - %s", hsqc_dir)
@@ -175,7 +175,7 @@ def topspin_text_reader(directory, dtype):
 
 def mestrenova_parser(name, input_dir, output_dir, tocsy_precision=3, hsqc_precision=3):
     '''Load in Mestrenova data from input directory - from peak table output
-    to retreive data for this parser, in mestrenova: File->Save As->select peak table output->rename to a csv'''
+    To retreive data for this parser, in mestrenova: File->Save As->select peak table output->rename to a csv'''
     data_dir = os.path.join(input_dir)
     hsqc_dir = None
     tocsy_dir = None
@@ -248,6 +248,25 @@ def mestrenova_parser(name, input_dir, output_dir, tocsy_precision=3, hsqc_preci
     return hsqc_data, tocsy_data
 
 def csv_parser(name, input_dir, output_dir, tocsy_precision=3, hsqc_precision=3):
+    '''
+    Allows for data to be put in from ambiguous csv files. 
+    Headers MUST BE:
+        H_PPM,C_PPM,Identity for HSQC data
+        Ha,Hb,Identity for TOCSY data
+
+    inputs:
+    name(str): The name of the compound to parse
+    input_dir(path/string): path to the input data
+    output_dir(path/string): path to the output directory
+    tocsy_precision(int): number of decimals for tocsy consideration
+    hsqc_precision(int): number of decimals for hsqc consideration
+    
+    output: 
+    hsqc_data(datframe): formatted HSQC data for MADByTE processing
+    tocsy_data(dataframe): formatted TOCSY data for MADByTE processing
+    JSON files for each are output in the output directory. 
+    
+    '''
     #Allows for manual input of data as CSV files # 
     Data_Path = os.path.join(input_dir,name)
     for data in os.listdir(Data_Path):
@@ -261,6 +280,44 @@ def csv_parser(name, input_dir, output_dir, tocsy_precision=3, hsqc_precision=3)
             tocsy_data = tocsy_data.copy().astype("float").round(tocsy_precision).sort_values(by=["Ha"], ascending=True)
             ### TOCSY IMPORT finishing steps
             tocsy_data.Identity = name
+            tocsy_data.to_json(os.path.join(output_dir, f"{name}_TOCSY_Preprocessed.json"),orient="records")
+        else:
+            pass
+    return hsqc_data,tocsy_data
+
+def jeol_parser(name, input_dir, output_dir,tocsy_precision=3,hsqc_precision=3):
+    '''Allows for import of JEOL Database formatted CSV files
+    
+    inputs:
+    name(str): The name of the compound to parse
+    input_dir(path/string): path to the input data
+    output_dir(path/string): path to the output directory
+    tocsy_precision(int): number of decimals for tocsy consideration
+    hsqc_precision(int): number of decimals for hsqc consideration
+    
+    output: 
+    hsqc_data(datframe): formatted HSQC data for MADByTE processing
+    tocsy_data(dataframe): formatted TOCSY data for MADByTE processing
+    JSON files for each are output in the output directory. 
+    
+    '''
+    Data_Path = os.path.join(input_dir,name)
+    for data in os.listdir(Data_Path):
+        if 'HSQC' in data or 'hsqc' in data: 
+            hsqc_data = pd.read_csv(os.path.join(Data_Path,data),skiprows=6) #Tested with database csv export option
+            hsqc_data.X = hsqc_data.X.map(lambda x: x.rstrip('[ppm]'))
+            hsqc_data.Y = hsqc_data.Y.map(lambda x: x.rstrip('[ppm]'))
+            hsqc_data = hsqc_data.rename(columns={"X":"H_PPM","Y":"C_PPM"})
+            hsqc_data = hsqc_data[["H_PPM","C_PPM","Intensity"]].copy().astype("float").round(hsqc_precision).sort_values(by=["H_PPM"], ascending=True)
+            # hsqc_data["Identity"] = name
+            hsqc_data.to_json(os.path.join(output_dir, f"{name}_HSQC_Preprocessed.json"),orient="records")
+        if 'TOCSY' in data or 'tocsy' in data: 
+            tocsy_data = pd.read_csv(os.path.join(Data_Path,data),skiprows=6)
+            tocsy_data.X = tocsy_data.X.map(lambda x: x.rstrip('[ppm]'))
+            tocsy_data.Y = tocsy_data.Y.map(lambda x: x.rstrip('[ppm]'))
+            tocsy_data = tocsy_data.rename(columns={"X":"Ha","Y":"Hb"})
+            tocsy_data = tocsy_data[['Ha','Hb','Intensity']].copy().astype("float").round(tocsy_precision).sort_values(by=["Ha"], ascending=True)
+            # tocsy_data['Identity'] = name
             tocsy_data.to_json(os.path.join(output_dir, f"{name}_TOCSY_Preprocessed.json"),orient="records")
         else:
             pass
