@@ -560,7 +560,7 @@ class MADByTE_Main(QMainWindow):
                     content = [x.rsplit('pp/')[1] for x in content]
                     if content == ['zg"']:
                         PROTON_DIR = os.path.join(path_,directory,'pdata',"1")
-                    elif content == ['zg30']:
+                    elif content == ['zg30"']:
                         PROTON_DIR = os.path.join(path_,directory,'pdata',"1")
 
             dic, data = ng.bruker.read_pdata(PROTON_DIR)
@@ -578,14 +578,15 @@ class MADByTE_Main(QMainWindow):
                 path_ = os.path.join(DataDirectory,ID)
                 PROTON_DIR ="undefined"
                 for directory in os.listdir(path_):
-                    with open(os.path.join(path_,directory,'pulseprogram')) as f:
-                        content = f.readlines(0)
-                        content = [x.strip() for x in content]
-                        content = [x.rsplit('pp/')[1] for x in content]
-                        if content == ['zg']:
-                            PROTON_DIR = os.path.join(path_,directory,'pdata',"1")
-                        elif content == ['zg30']:
-                            PROTON_DIR = os.path.join(path_,directory,'pdata',"1")
+                    if os.path.isdir(os.path.join(path_,directory)):
+                        print(directory)
+                        with open(os.path.join(path_,directory,'pulseprogram')) as f:
+                            content = f.readline()
+                            print(content)
+                            if 'zg' in content: #should work with all zg variants. 
+                                PROTON_DIR = os.path.join(path_,directory,'pdata',"1")
+                                break
+                            else: print("No 1H data found. ")
 
                 dic, data = ng.bruker.read_pdata(PROTON_DIR)
 
