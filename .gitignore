@@ -3,6 +3,10 @@
 .pylintrc
 .devcontainer/
 .DS_Store
+Dereplication_Database/
+Troubleshooting.ipynb
+Troubleshooting_Data
+Troubleshooting_Output
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

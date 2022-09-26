@@ -10,11 +10,12 @@ dependencies:
   - matplotlib
   - networkx
   - pandas
-  - pyqt
   - pyqtgraph
   - rtree
   - tqdm
   - scipy
   - joblib
   - pip:
+    - pyqt5==5.12
+    - pyqtwebengine==5.12
     - nmrglue

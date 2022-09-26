@@ -30,7 +30,7 @@ Dereplication_Database = 'Dereplication_Database'
 
 class MADByTE_Main(QMainWindow):
     def __init__(self):
-        __version__ = '1.3.0'
+        __version__ = '1.4.0'
         super(MADByTE_Main, self).__init__()
         uic.loadUi(os.path.join(BASE, 'static','MADByTE_GUI.ui'),self)
 
@@ -63,7 +63,7 @@ class MADByTE_Main(QMainWindow):
         self.MADByTE_Button_2.setEnabled(False)
         self.TOCSY_Net_Button_2.setEnabled(False)
         self.Multiplet_Merger_Checkbox.setChecked(True)
-        for NMR_Datatype in ['Bruker','Mestrenova','CSV']:#,'JOEL','Agilent','NMRPipe','Peak Lists]:
+        for NMR_Datatype in ['Bruker','Mestrenova','JEOL','CSV']:#,,'Agilent','NMRPipe','Peak Lists]:
             self.NMR_Data_Type_Combo_Box.addItem(NMR_Datatype)
         self.Network_Filename_Input.setText("MADByTE")
         ### Bioactivity Layering values ###
@@ -353,6 +353,13 @@ class MADByTE_Main(QMainWindow):
             compound_number+=1
         print('Completed.')
     def SMART_Export_Fx(self):
+        '''
+        
+        Generates a SMARTNMR compatable output of the HSQC data. Designed originally for SMART 2.0 (http://smart.ucsd.edu/classic) for the drag and drop function. 
+        SMART reference DOI: 10.1021/jacs.9b13786
+        Thanks to the SMART team for all the help along the way.  
+        
+        '''
         ID = self.Dereplication_Report_Sample_Select.currentText()
         Sample_Dataset = pd.read_json(os.path.join(MasterOutput,ID,ID+'_HSQC_Preprocessed.json')).drop(["Intensity"],axis=1)
         Sample_Dataset.columns = ['1H','13C']
@@ -375,6 +382,10 @@ class MADByTE_Main(QMainWindow):
             copyfile(os.path.join(MasterOutput,ID,ID+'_spin_systems.json'),os.path.join('Dereplication_Database',ID,ID+'_spin_systems.json'))
         Sample_Dataset.to_json(os.path.join('Dereplication_Database',ID,'DDF_'+ID+'_HSQC.json'))
     def Export_Derep_Results(self):
+        '''
+        Creates the output table for the dereplication function as a CSV. 
+        
+        '''
         import csv
         path = QFileDialog.getSaveFileName(
                 self, 'Save File', '', 'CSV(*.csv)')[0]
@@ -418,6 +429,11 @@ class MADByTE_Main(QMainWindow):
             PopUP('Log file not found.',"The MADByTE log file was not found. Please ensure you have selected a project directory to load the file.",'Error')
 
     def prompt_MADByTE(self):
+        '''
+
+        Generates a pop up for the user informing them the MADByTE analysis has begun. 
+
+        '''
         PopUP("Begining MADByTE","Now Begining MADByTE Analysis. \n Based on how many samples were submitted, this may take a while. Please hit 'ok'. ",'Info')
         ID = 'temp'
         global Entity
@@ -433,6 +449,7 @@ class MADByTE_Main(QMainWindow):
         elif self.Multiplet_Merger_Checkbox.isChecked() == False:
             Multiplet_Merger = False
         Similarity_Cutoff = float(self.Similarity_Ratio_Input.text())
+        self.Write_Params_File()
         global nmr_data_type
         nmr_data_type = self.NMR_Data_Type_Combo_Box.currentText()
 
@@ -452,6 +469,11 @@ class MADByTE_Main(QMainWindow):
         Similarity_Cutoff,
         nmr_data_type
     ):
+        '''
+        
+        Runs MADByTE analysis using inputs from the GUI. 
+        
+        '''
         
         Sample_List = []
         for x in range(self.BatchSamplesList.count()):
@@ -509,6 +531,9 @@ class MADByTE_Main(QMainWindow):
 
     ###Plotting Functions###
     def mouseMoved(self,evt):
+        '''
+        Tracks mouse movement on the NMR_Viewer_Plot
+        '''
         pos = evt
         if self.plot.sceneBoundingRect().contains(pos):
             mousePoint = self.plot.plotItem.vb.mapSceneToView(pos)
@@ -518,6 +543,11 @@ class MADByTE_Main(QMainWindow):
 
     ###How to view 1D NMR Data###
     def View_1D_Data(self):
+        '''
+        Plots 1D NMR data in the NMR_Data_View plot. 
+        Expecting either zg or zg30 pulse sequence, which must be declared in the first or second line for comments in the pulse sequence. 
+        
+        '''
         try:
             self.plot.clear()
             ID = self.NMR_Data_View_Selector.currentText()
@@ -530,6 +560,8 @@ class MADByTE_Main(QMainWindow):
                     content = [x.rsplit('pp/')[1] for x in content]
                     if content == ['zg"']:
                         PROTON_DIR = os.path.join(path_,directory,'pdata',"1")
+                    elif content == ['zg30"']:
+                        PROTON_DIR = os.path.join(path_,directory,'pdata',"1")
 
             dic, data = ng.bruker.read_pdata(PROTON_DIR)
 
@@ -540,9 +572,39 @@ class MADByTE_Main(QMainWindow):
             self.plot.invertX(True)
             self.plot.invertY(False)
         except:
-            PopUP('Data Not Found','1H data not found. \n This may be for a few reasons: \n \n * MADByTE can only display data processed by Topspin.\n * The FID is corrupted and cannot be read. \n  * The pulse program file is missing or corrupted.','Error')
+            try: 
+                self.plot.clear()
+                ID = self.NMR_Data_View_Selector.currentText()
+                path_ = os.path.join(DataDirectory,ID)
+                PROTON_DIR ="undefined"
+                for directory in os.listdir(path_):
+                    if os.path.isdir(os.path.join(path_,directory)):
+                        print(directory)
+                        with open(os.path.join(path_,directory,'pulseprogram')) as f:
+                            content = f.readline()
+                            print(content)
+                            if 'zg' in content: #should work with all zg variants. 
+                                PROTON_DIR = os.path.join(path_,directory,'pdata',"1")
+                                break
+                            else: print("No 1H data found. ")
+
+                dic, data = ng.bruker.read_pdata(PROTON_DIR)
+
+                udic = ng.bruker.guess_udic(dic, data) #needed to convert from points to PPM
+                uc = ng.fileiobase.uc_from_udic(udic)
+                ppm_scale = uc.ppm_scale()
+                self.plot.plot(ppm_scale,data)
+                self.plot.invertX(True)
+                self.plot.invertY(False)
+            except: 
+                PopUP('Data Not Found','1H data not found. \n This may be for a few reasons: \n \n * MADByTE can only display data processed by Topspin.\n * The FID is corrupted and cannot be read. \n  * The pulse program file is missing or corrupted.','Error')
 
     def View_HSQC_Data(self):
+        '''
+        Plots HSQC data in the NMR_Viewer_Plot. 
+        Utilizes the MADByTE Processed data - raw data not supported at this time. 
+        
+        '''
         try:
             self.plot.clear()
             ID = self.NMR_Data_View_Selector.currentText()
@@ -554,6 +616,11 @@ class MADByTE_Main(QMainWindow):
             PopUP('Data not found','Selected Dataset not found. Please process in Topspin Prior to running MADByTE. For 2D Datasets, the displayed data is derived from peak picking lists.','Error')
 
     def View_TOCSY_Data(self):
+        '''
+        Plot TOCSY data in the NMR_Viewer_Plot. 
+        Utilizes the MADByTE Processed data - raw data not supported at this time. 
+        
+        '''
         try:
             self.plot.clear()
             ID = self.NMR_Data_View_Selector.currentText()
@@ -607,7 +674,26 @@ class MADByTE_Main(QMainWindow):
             self.MADByTE_Button_2.setEnabled(True)
         except:
             return
-        
+    def Write_Params_File(self):
+        Path = os.path.join(MasterOutput,'Params.txt')
+        Similarity_Ratio = self.Similarity_Ratio_Input.text()
+        H_tolerance = self.Hppm_Input.text()
+        C_tolerance = self.Cppm_Input.text()
+        if self.Multiplet_Merger_Checkbox.isChecked()== True:
+            Multiplet_Merger = True
+        elif self.Multiplet_Merger_Checkbox.isChecked() == False:
+            Multiplet_Merger = False
+        with open(Path, "w") as file:
+            file.write(
+                'Input_Dir: '+str(DataDirectory)+'\n'+
+                'H Tolerance: '+str(H_tolerance)+'\n'+
+                'C Tolerance: '+str(C_tolerance)+'\n'+
+                'Similarity_Ratio: '+str(Similarity_Ratio)+'\n'+
+                'Solvent: '+str(self.Solvent_comboBox.currentText())+'\n'+
+                'Consensus: '+str(self.Consensus_Error_Input.text())+'\n'+
+                'Multiplet Merger: '+str(Multiplet_Merger)
+
+            )
 
 
 
