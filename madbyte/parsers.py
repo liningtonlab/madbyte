@@ -33,13 +33,19 @@ def topspin_parser(name, input_dir, output_dir, tocsy_precision=3, hsqc_precisio
             logger.warn(f"{exp_dir} is not a directory - skipping")
             continue
         with open(os.path.join(exp_dir,"pulseprogram")) as f:
-            # Skip first line
-            next(f)
             content = f.readline().strip()
-        if "hsqc" in content:
-            hsqc_dir = exp_dir
-        elif "dipsi" in content or "cosy" in content:
-            tocsy_dir = exp_dir
+            if "hsqc" in content:
+                hsqc_dir = exp_dir
+            elif "dipsi" in content or "cosy" in content:
+                tocsy_dir = exp_dir
+            # Skip first line
+            else: 
+                next(f)
+                content = f.readline().strip()
+                if "hsqc" in content:
+                    hsqc_dir = exp_dir
+                elif "dipsi" in content or "cosy" in content:
+                    tocsy_dir = exp_dir
 
     logger.debug(f"{name} : HSQC - %s", hsqc_dir)
     logger.debug(f"{name} : TOCSY - %s", tocsy_dir)
