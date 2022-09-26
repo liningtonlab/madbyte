@@ -7,7 +7,7 @@ import pandas as pd
 import madbyte.utils as utils
 from madbyte.filter import Filter, SOLVENT_DICT
 from madbyte.logging import get_logger
-from madbyte.parsers import acd_sim_parser, mestrenova_parser, topspin_parser,csv_parser
+from madbyte.parsers import acd_sim_parser, mestrenova_parser, topspin_parser,csv_parser,jeol_parser
 
 logger = get_logger("MADByTE")
 
@@ -54,6 +54,8 @@ def construct_spin_system(
         elif nmr_data_type == "CSV":
             hsqc_data, tocsy_data = csv_parser(name,input_dir,output_dir)
             merge_multiplets=False
+        elif nmr_data_type == "JEOL":
+            hsqc_data, tocsy_data = jeol_parser(name,input_dir,output_dir)
         else:
             raise Exception("nmr_data_type not valid!")
 

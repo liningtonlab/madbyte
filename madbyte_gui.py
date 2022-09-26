@@ -30,7 +30,7 @@ Dereplication_Database = 'Dereplication_Database'
 
 class MADByTE_Main(QMainWindow):
     def __init__(self):
-        __version__ = '1.3.0'
+        __version__ = '1.3.1'
         super(MADByTE_Main, self).__init__()
         uic.loadUi(os.path.join(BASE, 'static','MADByTE_GUI.ui'),self)
 
@@ -63,7 +63,7 @@ class MADByTE_Main(QMainWindow):
         self.MADByTE_Button_2.setEnabled(False)
         self.TOCSY_Net_Button_2.setEnabled(False)
         self.Multiplet_Merger_Checkbox.setChecked(True)
-        for NMR_Datatype in ['Bruker','Mestrenova','CSV']:#,'JOEL','Agilent','NMRPipe','Peak Lists]:
+        for NMR_Datatype in ['Bruker','Mestrenova','JEOL','CSV']:#,,'Agilent','NMRPipe','Peak Lists]:
             self.NMR_Data_Type_Combo_Box.addItem(NMR_Datatype)
         self.Network_Filename_Input.setText("MADByTE")
         ### Bioactivity Layering values ###
@@ -449,6 +449,7 @@ class MADByTE_Main(QMainWindow):
         elif self.Multiplet_Merger_Checkbox.isChecked() == False:
             Multiplet_Merger = False
         Similarity_Cutoff = float(self.Similarity_Ratio_Input.text())
+        self.Write_Params_File()
         global nmr_data_type
         nmr_data_type = self.NMR_Data_Type_Combo_Box.currentText()
 
@@ -672,7 +673,26 @@ class MADByTE_Main(QMainWindow):
             self.MADByTE_Button_2.setEnabled(True)
         except:
             return
-        
+    def Write_Params_File(self):
+        Path = os.path.join(MasterOutput,'Params.txt')
+        Similarity_Ratio = self.Similarity_Ratio_Input.text()
+        H_tolerance = self.Hppm_Input.text()
+        C_tolerance = self.Cppm_Input.text()
+        if self.Multiplet_Merger_Checkbox.isChecked()== True:
+            Multiplet_Merger = True
+        elif self.Multiplet_Merger_Checkbox.isChecked() == False:
+            Multiplet_Merger = False
+        with open(Path, "w") as file:
+            file.write(
+                'Input_Dir: '+str(DataDirectory)+'\n'+
+                'H Tolerance: '+str(H_tolerance)+'\n'+
+                'C Tolerance: '+str(C_tolerance)+'\n'+
+                'Similarity_Ratio: '+str(Similarity_Ratio)+'\n'+
+                'Solvent: '+str(self.Solvent_comboBox.currentText())+'\n'+
+                'Consensus: '+str(self.Consensus_Error_Input.text())+'\n'+
+                'Multiplet Merger: '+str(Multiplet_Merger)
+
+            )
 
 
 
