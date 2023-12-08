@@ -4,18 +4,18 @@ channels:
   - defaults
 dependencies:
   - python=3.7
-  - pip
+  - pip==23.3.1
   - bokeh>=1.0
-  - libspatialindex
-  - matplotlib
-  - networkx
-  - pandas
-  - pyqtgraph
-  - rtree
-  - tqdm
-  - scipy
-  - joblib
+  - libspatialindex==1.9.3
+  - matplotlib==3.5.3
+  - networkx==2.7
+  - pandas==1.3.5
+  - pyqtgraph==0.12.4
+  - rtree==1.0.1
+  - tqdm==4.66.1
+  - scipy==1.7.3
+  - joblib==1.1.1 
   - pip:
     - pyqt5==5.12
     - pyqtwebengine==5.12
-    - nmrglue
+    - nmrglue==0.10
