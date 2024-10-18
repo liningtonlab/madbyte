@@ -18,7 +18,7 @@ Please download the latest release and follow the instructions in the documentat
 
 ### Basic Usage
 
-## DO NOT INSTALL MADBYTE USING ANACONDA NAVIGATOR - IT WILL FAIL INSTALLATION. 
+#### DO NOT INSTALL MADBYTE USING ANACONDA NAVIGATOR - IT WILL FAIL INSTALLATION. 
 
 We **Highly** recommend installing through the included .bat script or installing manually with `conda env create -f environment.yml`. 
 
