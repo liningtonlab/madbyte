@@ -10,7 +10,7 @@ If you use this tool, please cite it:
 
 More information about the MADByTE program, including news, examples, and detailed tutorials can be found at our website:
 
-https://www.madbyte.org/
+https://www.madbytenmr.com/
 
 Documentation for usage and installation can be found in `Documentation/MADByTE_User_Guide.pdf`
 
